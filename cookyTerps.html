@@ -1,513 +1,391 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Live Terpene Viewer — Jungle Boys</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Live Terpene Viewer</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <style>
-    :root{
-      --bg:#0e1116;
-      --panel:#161b22;
-      --panel2:#1c222d;
-      --text:#e6edf3;
-      --muted:#9aa7b2;
-      --accent:#46d66a;
-      --border:#2a313d;
-      --blue:#3b82f6;
-    }
-
-    *{
-      box-sizing:border-box;
-    }
-
-    body {
-      font-family: Inter, system-ui, sans-serif;
-      padding: 14px;
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    h1 {
-      text-align: center;
-      font-size: 1.6rem;
-      margin: 10px 0;
-      font-weight: 700;
-    }
-
-    #status {
-      text-align: center;
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-
-    /* PROGRESS BAR */
-    #progressBarContainer {
-      width: 100%;
-      max-width: 520px;
-      margin: 12px auto;
-      height: 10px;
-      border-radius: 999px;
-      background: #222834;
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-
-    #progressBar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--blue), var(--accent));
-      transition: width 0.3s ease;
-    }
-
-    /* FILTER */
-    #filterContainer {
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      gap:10px;
-      margin-top: 14px;
-    }
-
-    #subcategoryFilter {
-      background: var(--panel);
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-size: 0.95rem;
-      outline:none;
-      cursor:pointer;
-    }
-
-    /* TABLE WRAPPER */
-    #tableContainer{
-      margin-top: 18px;
-      overflow-x:auto;
-      padding: 0 6px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: var(--panel);
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-      font-size: 0.85rem;
-      table-layout: fixed;
-    }
-
-    th, td {
-      padding: 10px;
-      border-bottom: 1px solid var(--border);
-      text-align: center;
-      word-wrap: break-word;
-    }
-
-    th {
-      background: linear-gradient(180deg, var(--panel2), var(--panel));
-      color: var(--text);
-      font-weight: 600;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-      cursor: pointer;
-    }
-
-    tr:hover td{
-      background: rgba(70,214,106,0.06);
-    }
-
-    tr:nth-child(even) td {
-      background: rgba(255,255,255,0.02);
-    }
-
-    a.product-link {
-      color: var(--blue);
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    a.product-link:hover {
-      text-decoration: underline;
-    }
-
-    /* BIGGER PRODUCT IMAGES */
-    img.product-img {
-      max-width: 110px;
-      max-height: 110px;
-      object-fit: contain;
-      border-radius: 10px;
-      background: #111722;
-      padding: 6px;
-    }
-
-    /* HIGHLIGHTS (kept but cleaner) */
-    td.highlight-row { background-color: rgba(70,214,106,0.15) !important; }
-    td.highlight-col { background-color: rgba(123, 92, 255, 0.12) !important; }
-    td.highlight-cell { background-color: rgba(255,255,255,0.05) !important; }
-
-    /* INFO ICON */
-    .info-icon {
-      cursor: pointer;
-      opacity: 0.8;
-    }
-
-    .info-icon:hover{
-      opacity:1;
-    }
-
-    /* OVERLAY */
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 999;
-      padding: 14px;
-      backdrop-filter: blur(6px);
-    }
-
-    .overlay-content {
-      background: var(--panel);
-      padding: 22px;
-      border-radius: 16px;
-      max-width: 600px;
-      max-height: 80%;
-      overflow-y: auto;
-      border: 1px solid var(--border);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-      color: var(--text);
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
-
-    .error {
-      color: #ff6b6b;
-      text-align: center;
-    }
-
-    /* MOBILE */
-    @media (max-width: 768px) {
-      table {
-        font-size: 0.75rem;
-      }
-
-      img.product-img {
-        max-width: 70px;
-        max-height: 70px;
-      }
-
-      h1 {
-        font-size: 1.2rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      h1 {
-        font-size: 1rem;
-      }
-
-      #subcategoryFilter {
-        font-size: 0.85rem;
-      }
-    }
-
-    /* ===== PRODUCT PREVIEW TOAST ===== */
-
-.preview-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  backdrop-filter: blur(6px);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  padding: 20px;
+<style>
+:root{
+  --bg:#0e1116;
+  --panel:#161b22;
+  --panel2:#1c222d;
+  --text:#e6edf3;
+  --muted:#9aa7b2;
+  --accent:#46d66a;
+  --border:#2a313d;
+  --blue:#3b82f6;
 }
 
-.preview-backdrop.active {
-  display: flex;
+*{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  font-family:Inter, system-ui, sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  padding:14px;
 }
 
-.preview-modal {
-  width: min(900px, 95vw);
-  max-height: 85vh;
-  overflow: hidden;
-  background: #161b22;
-  border: 1px solid #2a313d;
-  border-radius: 18px;
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  box-shadow: 0 25px 70px rgba(0,0,0,0.6);
+/* HEADER */
+h1{
+  text-align:center;
+  font-size:1.6rem;
+  margin:10px 0;
+  font-weight:700;
 }
 
-/* IMAGE SIDE */
-.preview-image {
-  background: #0f141c;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 18px;
+#status{
+  text-align:center;
+  color:var(--muted);
+  font-size:0.9rem;
 }
 
-.preview-image img {
-  max-width: 100%;
-  max-height: 70vh;
-  object-fit: contain;
-  border-radius: 12px;
+/* PROGRESS */
+#progressBarContainer{
+  max-width:520px;
+  margin:12px auto;
+  height:10px;
+  background:#222834;
+  border-radius:999px;
+  overflow:hidden;
+  border:1px solid var(--border);
 }
 
-/* INFO SIDE */
-.preview-info {
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow: hidden;
+#progressBar{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,var(--blue),var(--accent));
+  transition:width .3s ease;
 }
 
-.preview-title {
-  font-size: 18px;
-  font-weight: 700;
+/* FILTER */
+#filterContainer{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin-top:14px;
 }
 
-.preview-price {
-  color: #46d66a;
-  font-weight: 700;
-  font-size: 16px;
+#subcategoryFilter{
+  background:var(--panel);
+  color:var(--text);
+  border:1px solid var(--border);
+  padding:10px 12px;
+  border-radius:12px;
+  cursor:pointer;
 }
 
-.preview-link a {
-  color: #3b82f6;
-  text-decoration: none;
+/* TABLE */
+#tableContainer{
+  margin-top:18px;
+  overflow-x:auto;
 }
 
-.preview-link a:hover {
-  text-decoration: underline;
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:var(--panel);
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 10px 30px rgba(0,0,0,0.35);
+  font-size:0.85rem;
+  table-layout:fixed;
 }
 
-/* TERP SECTION */
-.terp-scroll {
-  margin-top: 10px;
-  padding: 10px;
-  background: #0f141c;
-  border: 1px solid #2a313d;
-  border-radius: 12px;
-  flex: 1;
-  overflow-y: auto;
-  font-size: 13px;
-  line-height: 1.5;
+th, td{
+  padding:10px;
+  border-bottom:1px solid var(--border);
+  text-align:center;
 }
 
-.terp-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 3px 0;
-  border-bottom: 1px dashed rgba(255,255,255,0.06);
+th{
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  position:sticky;
+  top:0;
+  cursor:pointer;
 }
 
-.terp-row span:first-child {
-  color: #9aa7b2;
+tr:hover td{
+  background:rgba(70,214,106,0.06);
 }
 
-.terp-row span:last-child {
-  color: #e6edf3;
+tr:nth-child(even) td{
+  background:rgba(255,255,255,0.02);
 }
-  </style>
+
+a{
+  color:var(--blue);
+  text-decoration:none;
+}
+
+/* IMAGES */
+img.product-img{
+  width:90px;
+  height:90px;
+  object-fit:contain;
+  background:#0f141c;
+  border-radius:10px;
+  padding:6px;
+}
+
+/* OVERLAY (TERP INFO) */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+
+.overlay-content{
+  background:var(--panel);
+  padding:20px;
+  border-radius:14px;
+  max-width:600px;
+  border:1px solid var(--border);
+}
+
+/* PRODUCT PREVIEW MODAL */
+.preview-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  backdrop-filter:blur(6px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+
+.preview-backdrop.active{
+  display:flex;
+}
+
+.preview-modal{
+  width:min(900px,95vw);
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:16px;
+  display:grid;
+  grid-template-columns:1.2fr 1fr;
+  overflow:hidden;
+}
+
+.preview-image{
+  background:#0f141c;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+}
+
+.preview-image img{
+  max-width:100%;
+  max-height:70vh;
+}
+
+.preview-info{
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.preview-title{
+  font-weight:700;
+  font-size:18px;
+}
+
+.preview-price{
+  color:var(--accent);
+  font-weight:700;
+}
+
+.terp-scroll{
+  background:#0f141c;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px;
+  overflow-y:auto;
+  flex:1;
+  font-size:13px;
+}
+
+.terp-row{
+  display:flex;
+  justify-content:space-between;
+  border-bottom:1px dashed rgba(255,255,255,0.08);
+  padding:4px 0;
+}
+</style>
 </head>
 
 <body>
 
-  <h1 id="pageTitle">Terpene Data</h1>
-  <div id="status">Loading...</div>
+<h1 id="pageTitle">Terpene Data</h1>
+<div id="status">Loading...</div>
 
-  <div id="progressBarContainer">
-    <div id="progressBar"></div>
-  </div>
+<div id="progressBarContainer">
+  <div id="progressBar"></div>
+</div>
 
-  <div id="filterContainer">
-    <label style="font-weight:600; color:var(--muted);">Filter</label>
-    <select id="subcategoryFilter">
-      <option value="all">All Products</option>
-      <option value="vape-pens">Vapes</option>
-      <option value="concentrates">Concentrates</option>
-      <option value="premium-flower">Premium Flower</option>
-      <option value="pre-rolls">Pre-rolls</option>
-      <option value="pops">Pops</option>
-    </select>
-  </div>
+<div id="filterContainer">
+  <select id="subcategoryFilter">
+    <option value="all">All Products</option>
+    <option value="vape-pens">Vapes</option>
+    <option value="concentrates">Concentrates</option>
+    <option value="premium-flower">Premium Flower</option>
+    <option value="pre-rolls">Pre-rolls</option>
+  </select>
+</div>
 
-  <div id="tableContainer"></div>
+<div id="tableContainer"></div>
 
-  <div id="overlay" class="overlay" onclick="if(event.target.id==='overlay'){ this.style.display='none'; }">
-    <div id="overlayContent" class="overlay-content"></div>
-  </div>
+<!-- TERP OVERLAY -->
+<div id="overlay" class="overlay">
+  <div id="overlayContent" class="overlay-content"></div>
+</div>
 
-  <div id="previewBackdrop" class="preview-backdrop">
-  <div class="preview-modal" id="previewModal">
-    
+<!-- PRODUCT PREVIEW -->
+<div id="previewBackdrop" class="preview-backdrop">
+  <div class="preview-modal">
     <div class="preview-image">
-      <img id="previewImg" src="" />
+      <img id="previewImg"/>
     </div>
 
     <div class="preview-info">
-      <div class="preview-title" id="previewTitle">Product</div>
-
-      <div class="preview-price" id="previewPrice">$0.00</div>
-
-      <div class="preview-link" id="previewLink"></div>
-
+      <div class="preview-title" id="previewTitle"></div>
+      <div class="preview-price" id="previewPrice"></div>
+      <div id="previewLink"></div>
       <div class="terp-scroll" id="previewTerps"></div>
     </div>
-
   </div>
 </div>
-  
+ 
 <script>
+
 const progressBar = document.getElementById("progressBar");
-function updateProgress(percent) {
-  progressBar.style.width = percent + "%";
-}
-updateProgress(5);
+function updateProgress(p){ progressBar.style.width = p + "%"; }
 
 const params = new URLSearchParams(window.location.search);
-const retailer = params.get("retailer") || "jungle-boys-tampa";
+const retailer = params.get("retailer") || "tampa";
 
 const displayName = retailer
-  .replace(/-/g, " ")
-  .replace(/\b\w/g, l => l.toUpperCase());
+  .replace(/-/g,' ')
+  .replace(/\b\w/g,l=>l.toUpperCase());
 
-document.getElementById("pageTitle").textContent =
-  `Terpenes — ${displayName}`;
+document.getElementById("pageTitle").textContent = `Terpenes — ${displayName}`;
 
 let allFetchedProducts = [];
 
 /* =========================
-   DATA LOAD
+   STATUS
 ========================= */
+function setStatus(msg, isError=false){
+  const el = document.getElementById("status");
+  el.textContent = msg;
+  el.style.color = isError ? "#ff6b6b" : "#9aa7b2";
+}
+
+/* =========================
+   FETCH (PRESERVED + POPS INCLUDED)
+========================= */
+updateProgress(5);
+
 Promise.all([
-  fetch(`https://jungleboysflorida.com/wp-json/dovetail-api/v1/products?perpage=150&retailer=${retailer}&menutype=medical&categories[]=vape-pens`).then(r => r.json()),
-  fetch(`https://jungleboysflorida.com/wp-json/dovetail-api/v1/products?perpage=150&retailer=${retailer}&menutype=medical&categories[]=concentrates`).then(r => r.json()),
-  fetch(`https://jungleboysflorida.com/wp-json/dovetail-api/v1/products?perpage=150&retailer=${retailer}&menutype=medical&subcategory=premium-flower`).then(r => r.json()),
-  fetch(`https://jungleboysflorida.com/wp-json/dovetail-api/v1/products?perpage=150&retailer=${retailer}&menutype=medical&categories[]=pre-rolls`).then(r => r.json()),
-  fetch(`https://jungleboysflorida.com/wp-json/dovetail-api/v1/products?perpage=150&retailer=${retailer}&menutype=medical&subcategory=pops`).then(r => r.json())
-]).then(([vapeData, concData, flowerData, prerollData, popsData]) => {
+  fetch(`https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=vapes`).then(r => r.text()),
+  fetch(`https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=concentrates`).then(r => r.text()),
+  fetch(`https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=pre-rolls`).then(r => r.text()),
+  fetch(`https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=premium-flower`).then(r => r.text()),
+  fetch(`https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=pops`).then(r => r.text())
+])
+.then(([vapeData, concData, prerollData, flowerData, popsData]) => {
 
   updateProgress(40);
 
-  const vapeProducts = vapeData?.results ?? [];
-  const concProducts = concData?.results ?? [];
-  const flowerProducts = flowerData?.results ?? [];
-  const prerollProducts = prerollData?.results ?? [];
-  const popsProducts = popsData?.results ?? [];
+  const vapeProducts = fix(vapeData).flatMap(p => p.results ?? []);
+  const concProducts = fix(concData).flatMap(p => p.results ?? []);
+  const prerollProducts = fix(prerollData).flatMap(p => p.results ?? []);
+  const flowerProducts = fix(flowerData).flatMap(p => p.results ?? []);
+  const popsProducts = fix(popsData).flatMap(p => p.results ?? []);
 
-  vapeProducts.forEach(p => p._sourceCategory = "vape-pens");
-  concProducts.forEach(p => p._sourceCategory = "concentrates");
-  flowerProducts.forEach(p => p._sourceCategory = "premium-flower");
-  prerollProducts.forEach(p => p._sourceCategory = "pre-rolls");
-  popsProducts.forEach(p => p._sourceCategory = "pops");
+  vapeProducts.forEach(p => p._cat = "vapes");
+  concProducts.forEach(p => p._cat = "concentrates");
+  prerollProducts.forEach(p => p._cat = "pre-rolls");
+  flowerProducts.forEach(p => p._cat = "premium-flower");
+  popsProducts.forEach(p => p._cat = "pops");
 
   allFetchedProducts = [
     ...vapeProducts,
     ...concProducts,
-    ...flowerProducts,
     ...prerollProducts,
+    ...flowerProducts,
     ...popsProducts
   ];
 
   updateProgress(80);
-  renderTerpeneTable(allFetchedProducts);
+  render(allFetchedProducts);
   updateProgress(100);
 
-}).catch(err => {
-  document.getElementById("status").innerHTML =
-    `<p class="error">Failed to load data for <strong>${displayName}</strong>.</p>`;
+  setStatus(`Loaded ${allFetchedProducts.length} products`);
+})
+.catch(err => {
   console.error(err);
+  setStatus("Failed to load data", true);
 });
+
+/* =========================
+   JSON FIX
+========================= */
+function fix(raw){
+  const t = raw.trim();
+  const a = !t.startsWith("[");
+  const b = !t.endsWith("]");
+  return JSON.parse(`${a ? "[" : ""}${t}${b ? "]" : ""}`);
+}
 
 /* =========================
    FILTER
 ========================= */
-document.getElementById("subcategoryFilter").addEventListener("change", function () {
-  const selected = this.value;
-
-  if (selected === "all") {
-    renderTerpeneTable(allFetchedProducts);
-  } else {
-    renderTerpeneTable(
-      allFetchedProducts.filter(p => p._sourceCategory === selected)
-    );
-  }
+document.getElementById("subcategoryFilter").addEventListener("change", e=>{
+  const v = e.target.value;
+  if(v === "all") return render(allFetchedProducts);
+  render(allFetchedProducts.filter(p => p._cat === v));
 });
 
-/* =========================
-   PREVIEW MODAL
-========================= */
-const previewBackdrop = document.getElementById("previewBackdrop");
-const previewImg = document.getElementById("previewImg");
-const previewTitle = document.getElementById("previewTitle");
-const previewPrice = document.getElementById("previewPrice");
-const previewLink = document.getElementById("previewLink");
-const previewTerps = document.getElementById("previewTerps");
-
-function openPreview(product) {
-  previewImg.src = product.image || "";
-  previewTitle.textContent = product.name || "Product";
-  previewPrice.textContent = product.price || "—";
-
-  previewLink.innerHTML = product.link
-    ? `<a href="${product.link}" target="_blank">View in Store</a>`
-    : "";
-
-  previewTerps.innerHTML = "";
-
-  (product.terpenes || []).forEach(t => {
-    const row = document.createElement("div");
-    row.className = "terp-row";
-    row.innerHTML = `
-      <span>${t.name}</span>
-      <span>${typeof t.value === "number" ? t.value.toFixed(2) : t.value}</span>
-    `;
-    previewTerps.appendChild(row);
-  });
-
-  previewBackdrop.classList.add("active");
-}
-
-function closePreview() {
-  previewBackdrop.classList.remove("active");
-}
-
-previewBackdrop.addEventListener("click", (e) => {
-  if (e.target === previewBackdrop) closePreview();
-});
 
 /* =========================
-   TABLE RENDER
+   REQUIRED OVERLAY FUNCTION
 ========================= */
-function renderTerpeneTable(products) {
+function showDescription(event, col){
+  event.stopPropagation();
+  document.getElementById("overlayContent").innerHTML =
+    terpeneDescriptions[col] || "No description.";
 
-  const excludedTerpenes = ["Guaiol","Eucalyptol","Isopulegol","Nerolidol","Terpinene"];
+  document.getElementById("overlay").style.display = "flex";
+}
 
-  const allTerpenes = [...new Set(
+/* =========================
+   RENDER
+========================= */
+function render(products){
+
+  const excluded = ["Guaiol","Eucalyptol","Isopulegol","Nerolidol","Terpinene"];
+
+  const terpenes = [...new Set(
     products.flatMap(p =>
       (p.terpenes ?? [])
         .map(t => t.name)
-        .filter(n => n && !excludedTerpenes.includes(n))
+        .filter(n => n && !excluded.includes(n))
     )
   )].sort();
 
-  const columns = ["Image","Price","ProductName","Delivery",...allTerpenes];
+  const columns = ["Image","Price","ProductName","Delivery",...terpenes];
 
   const rows = products.map(p => {
 
@@ -518,44 +396,66 @@ function renderTerpeneTable(products) {
       ])
     );
 
-    let priceValue = "—";
-
-    if (p.variants?.length) {
-      const v = p.variants[0];
-      const price = v.price ?? v.regular_price;
-      if (price != null) {
-        priceValue = `$${parseFloat(price).toFixed(2)}`;
-      }
+    let price = "";
+    if (Array.isArray(p.variants) && p.variants.length) {
+      const v = p.variants[0].price ?? p.variants[0].regular_price;
+      if (v != null) price = `$${parseFloat(v).toFixed(2)}`;
     }
 
     return {
       Image: p.images?.[0]?.url || "",
-      Price: priceValue,
-      ProductName: `<a class="product-link" href="${p.permalink || p.link || "#"}" target="_blank">${p.name}</a>`,
+      Price: price || "—",
+      ProductName: p.name || "",
       Delivery: p.subcategory || "",
-      ...Object.fromEntries(allTerpenes.map(t => [t, terpMap[t] ?? ""]))
+      _raw: p,
+      ...Object.fromEntries(terpenes.map(t => [t, terpMap[t] ?? ""]))
     };
   });
 
-  createSortableTable(columns, rows);
-  document.getElementById("status").textContent =
-    `Loaded ${rows.length} products.`;
+  buildTable(columns, rows);
+  setStatus(`Loaded ${rows.length} products`);
 }
 
 /* =========================
-   TABLE BUILDER (FIXED HOVER)
+   TABLE (JUNGLE BOYS STYLE + REQUIRED ICON)
 ========================= */
-function createSortableTable(columns, data) {
+function buildTable(columns, data){
 
   const table = document.createElement("table");
   const thead = table.createTHead();
-  const headRow = thead.insertRow();
+  const tr = thead.insertRow();
 
   columns.forEach(col => {
     const th = document.createElement("th");
-    th.textContent = col;
-    th.addEventListener("click", () => sortBy(col, data));
-    headRow.appendChild(th);
+
+    /* REQUIRED CONDITION */
+    if (terpeneDescriptions[col]) {
+
+      const wrap = document.createElement("div");
+      wrap.style.display = "flex";
+      wrap.style.justifyContent = "space-between";
+      wrap.style.alignItems = "center";
+
+      const label = document.createElement("span");
+      label.textContent = col;
+
+      const infoIcon = document.createElement("span");
+      infoIcon.textContent = "ℹ️";
+      infoIcon.style.cursor = "pointer";
+
+      /* REQUIRED HANDLER */
+      infoIcon.onclick = (e) => showDescription(e, col);
+
+      wrap.appendChild(label);
+      wrap.appendChild(infoIcon);
+      th.appendChild(wrap);
+
+    } else {
+      th.textContent = col;
+    }
+
+    th.onclick = () => sort(col, data);
+    tr.appendChild(th);
   });
 
   const tbody = table.createTBody();
@@ -566,47 +466,13 @@ function createSortableTable(columns, data) {
     columns.forEach(col => {
       const td = tr.insertCell();
 
-      if (col === "Image" && row[col]) {
-
-        const imgUrl = row[col];
-        td.innerHTML = `<img class="product-img" src="${imgUrl}" />`;
-
-        const imgEl = td.querySelector("img");
-
-        // 🔥 FIXED PRODUCT MATCH (NO MAP BUGS)
-        const product = allFetchedProducts.find(p =>
-          p.images?.some(img => img.url === imgUrl)
-        );
-
-        if (product) {
-          imgEl.addEventListener("pointerenter", () => {
-
-            const price = product.variants?.length
-              ? `$${parseFloat(
-                  product.variants[0].price ??
-                  product.variants[0].regular_price ??
-                  0
-                ).toFixed(2)}`
-              : "—";
-
-            openPreview({
-              image: imgUrl,
-              name: product.name,
-              price,
-              link: product.permalink || product.link,
-              terpenes: (product.terpenes || []).map(t => ({
-                name: t.name,
-                value: t.value
-              }))
-            });
-
-          });
-
-          imgEl.addEventListener("mouseleave", closePreview);
+      if (col === "Image") {
+        if (row[col]) {
+          td.innerHTML = `<img class="product-img" src="${row[col]}"/>`;
+          td.onclick = () => openPreview(row._raw);
         }
-
       } else {
-        td.innerHTML = row[col] || "";
+        td.textContent = row[col] || "";
       }
     });
   });
@@ -618,36 +484,70 @@ function createSortableTable(columns, data) {
 /* =========================
    SORT
 ========================= */
-function sortBy(col, data) {
-  const isNumeric = data.every(r =>
-    !isNaN(parseFloat(r[col])) || r[col] === ""
-  );
+function sort(col, data){
 
-  const sorted = [...data].sort((a, b) => {
-    const av = isNumeric
-      ? parseFloat(a[col]) || 0
-      : (a[col] || "").toLowerCase();
+  const numeric = data.every(r => !isNaN(parseFloat(r[col])));
 
-    const bv = isNumeric
-      ? parseFloat(b[col]) || 0
-      : (b[col] || "").toLowerCase();
-
-    return isNumeric ? bv - av : av.localeCompare(bv);
+  const sorted = [...data].sort((a,b)=>{
+    const av = numeric ? parseFloat(a[col])||0 : (a[col]||"").toLowerCase();
+    const bv = numeric ? parseFloat(b[col])||0 : (b[col]||"").toLowerCase();
+    return numeric ? bv-av : av.localeCompare(bv);
   });
 
-  createSortableTable(Object.keys(sorted[0]), sorted);
+  buildTable(Object.keys(sorted[0]), sorted);
 }
 
 /* =========================
-   TERP INFO
+   PREVIEW MODAL (UNCHANGED BEHAVIOR)
 ========================= */
-function showDescription(event, col) {
-  event.stopPropagation();
-  document.getElementById("overlayContent").innerHTML =
-    terpeneDescriptions[col] || "No description.";
-  document.getElementById("overlay").style.display = "flex";
+const backdrop = document.getElementById("previewBackdrop");
+const img = document.getElementById("previewImg");
+const title = document.getElementById("previewTitle");
+const price = document.getElementById("previewPrice");
+const link = document.getElementById("previewLink");
+const terps = document.getElementById("previewTerps");
+
+function openPreview(p){
+
+  img.src = p.images?.[0]?.url || "";
+  title.textContent = p.name || "Product";
+
+  const priceVal =
+    p.variants?.[0]?.price ??
+    p.variants?.[0]?.regular_price;
+
+  price.textContent = priceVal
+    ? `$${parseFloat(priceVal).toFixed(2)}`
+    : "—";
+
+  link.innerHTML = p.permalink
+    ? `<a href="${p.permalink}" target="_blank">View Product</a>`
+    : "";
+
+  terps.innerHTML = "";
+
+  (p.terpenes ?? []).forEach(t => {
+    const row = document.createElement("div");
+    row.className = "terp-row";
+
+    row.innerHTML = `
+      <span>${t.name}</span>
+      <span>${typeof t.value === "number"
+        ? t.value.toFixed(2)
+        : t.value}</span>
+    `;
+
+    terps.appendChild(row);
+  });
+
+  backdrop.classList.add("active");
 }
 
+backdrop.onclick = e=>{
+  if(e.target === backdrop){
+    backdrop.classList.remove("active");
+  }
+};
   // retrieved emojis from emojieDB
 const terpeneDescriptions = {
       "Alpha Pinene": "🌲 <strong>Alpha Pinene</strong><br><br>• Smells like: Pine trees<br>• Feels like: Focused, alert, awake<br>• Helps with: Memory, asthma (opens airways)<br>• Real life: Found in pine needles, rosemary",
