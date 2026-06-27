@@ -2,183 +2,267 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Jungle Boys Locations - Tiles with Maps</title>
+  <title>Jungle Boys Locations - Modern Viewer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      font-family: Arial, sans-serif;
-      background: #f3f3f3;
+    :root{
+      --bg:#0f1115;
+      --panel:#171a21;
+      --panel-2:#1f2430;
+      --text:#e8e8e8;
+      --muted:#a7b0be;
+      --accent:#46d66a;
+      --danger:#ff4d4d;
+      --border:#2a2f3a;
     }
 
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
+    *{
+      box-sizing:border-box;
     }
 
-    .logo {
-      margin-bottom: 10px;
+    html,body{
+      margin:0;
+      padding:0;
+      font-family:Inter, system-ui, sans-serif;
+      background:var(--bg);
+      color:var(--text);
     }
 
-    .logo img {
-      height: 60px;
+    body{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:30px 16px 60px;
     }
 
-    .disclaimer {
-      color: #b30000;
-      background: #fff3f3;
-      border: 1px solid #ffcccc;
-      padding: 10px 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      text-align: center;
-      max-width: 700px;
-      font-size: 0.95rem;
+    /* HEADER */
+    .logo h2{
+      font-size:22px;
+      font-weight:700;
+      text-align:center;
+      margin:10px 0 20px;
+      letter-spacing:0.3px;
     }
 
-    .tiles-container {
-  width: 650px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-
-.tile {
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
-  font-size: 1.2rem;
-  color: #333;
-  cursor: pointer;
-  user-select: none;
-  text-align: center;
-  transition: background-color 0.2s ease;
-  padding: 10px;
-  aspect-ratio: 1 / 1; 
-}
-
-.tile:hover {
-  background-color: #cce5ff;
-}
-
-    .modal-backdrop {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 999;
+    .disclaimer{
+      max-width:900px;
+      background:rgba(255, 77, 77, 0.08);
+      border:1px solid rgba(255, 77, 77, 0.25);
+      color:#ffd6d6;
+      padding:16px 18px;
+      border-radius:14px;
+      font-size:14px;
+      line-height:1.5;
+      margin-bottom:25px;
+      backdrop-filter: blur(6px);
     }
 
-    .modal-backdrop.active {
-      display: flex;
+    .disclaimer a{
+      color:#ff9a9a;
     }
 
-    .modal {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.25);
-      max-width: 600px;
-      width: 90%;
-      max-height: 90vh;
-      overflow-y: auto;
-      padding: 20px;
-      position: relative;
+    /* GRID */
+    .tiles-container{
+      width:min(1200px, 95%);
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+      gap:18px;
     }
 
-    .modal h2 {
-      margin-top: 0;
+    .tile{
+      background:linear-gradient(180deg, var(--panel), var(--panel-2));
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:22px 18px;
+      cursor:pointer;
+      transition:all .2s ease;
+      text-align:center;
+      font-weight:600;
+      font-size:16px;
+      color:var(--text);
+      box-shadow:0 10px 25px rgba(0,0,0,0.25);
+      user-select:none;
+      position:relative;
+      overflow:hidden;
     }
 
-    .modal p {
-      margin: 8px 0;
+    .tile::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle at top left, rgba(70,214,106,0.12), transparent 60%);
+      opacity:0;
+      transition:0.25s;
     }
 
-    .close-btn {
-      position: absolute;
-      top: 12px;
-      right: 14px;
-      font-size: 1.3rem;
-      border: none;
-      background: none;
-      cursor: pointer;
-      color: #999;
+    .tile:hover{
+      transform:translateY(-6px);
+      border-color:var(--accent);
     }
 
-    .close-btn:hover {
-      color: #000;
+    .tile:hover::after{
+      opacity:1;
     }
 
-    .select-btn {
-      margin-top: 15px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      font-size: 1rem;
-      cursor: pointer;
+    /* MODAL */
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.65);
+      display:none;
+      justify-content:center;
+      align-items:center;
+      z-index:999;
+      padding:20px;
     }
 
-    .select-btn:hover {
-      background-color: #0056b3;
+    .modal-backdrop.active{
+      display:flex;
     }
 
-    .map-container {
-      margin-top: 10px;
-      height: 300px;
-      width: 100%;
+    .modal{
+      width:min(850px, 95vw);
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:22px;
+      padding:26px;
+      position:relative;
+      box-shadow:0 20px 60px rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
     }
 
-    .map-container iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      border-radius: 8px;
+    .modal h2{
+      margin:0 0 10px;
+      font-size:22px;
     }
+
+    .modal p{
+      margin:6px 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .modal p strong{
+      color:var(--text);
+    }
+
+    .close-btn{
+      position:absolute;
+      top:14px;
+      right:16px;
+      background:none;
+      border:none;
+      font-size:24px;
+      cursor:pointer;
+      color:var(--muted);
+    }
+
+    .close-btn:hover{
+      color:white;
+    }
+
+    /* MAP */
+    .map-container{
+      margin-top:14px;
+      height:380px;
+      border-radius:16px;
+      overflow:hidden;
+      border:1px solid var(--border);
+    }
+
+    .map-container iframe{
+      width:100%;
+      height:100%;
+      border:0;
+    }
+
+    /* BUTTON */
+    .select-btn{
+      margin-top:18px;
+      width:100%;
+      padding:14px;
+      border-radius:14px;
+      border:none;
+      background:var(--accent);
+      color:#0b0f0c;
+      font-size:16px;
+      font-weight:700;
+      cursor:pointer;
+      transition:0.2s;
+    }
+
+    .select-btn:hover{
+      transform:scale(1.02);
+      filter:brightness(1.05);
+    }
+
+    /* FOOTER */
+    footer{
+      margin-top:40px;
+      opacity:0.7;
+      font-size:13px;
+    }
+
+    footer img{
+      vertical-align:middle;
+      margin-left:6px;
+    }
+
+    /* SCROLLBAR (optional modern touch) */
+    ::-webkit-scrollbar{
+      width:10px;
+    }
+
+    ::-webkit-scrollbar-thumb{
+      background:#2b3240;
+      border-radius:10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover{
+      background:#3a4355;
+    }
+
   </style>
 </head>
+
 <body>
 
   <div class="logo">
-  <h2 style="text-align: center;">Independent Terpene Viewer for Jungle Boys Florida</h2>
-</div>
+    <h2>Independent Terpene Viewer for Jungle Boys Florida</h2>
+  </div>
 
-<div class="disclaimer">
-  This site is <strong>not affiliated</strong> with the official 
-  <a href="https://jungleboysflorida.com" target="_blank">Jungle Boys Florida</a>.  
-  It is an <strong>independent filtering tool</strong> to help users explore locations and product variety in a user‑friendly way.
-  <br><br>
-  <strong>Note:</strong> Jungle Boys offers <strong>All‑In‑One (AIO) vapes</strong> only — no cartridges are available.
-</div>
-
+  <div class="disclaimer">
+    This site is <strong>not affiliated</strong> with the official 
+    <a href="https://jungleboysflorida.com" target="_blank">Jungle Boys Florida</a>.
+    It is an <strong>independent filtering tool</strong> to help users explore locations and product variety.
+    <br><br>
+    <strong>Note:</strong> Jungle Boys offers <strong>All-In-One (AIO) vapes</strong> only.
+  </div>
 
   <div class="tiles-container" id="tilesContainer"></div>
 
   <div class="modal-backdrop" id="modalBackdrop">
     <div class="modal">
       <button class="close-btn" id="closeBtn">&times;</button>
+
       <h2 id="modalTitle">City Name</h2>
+
       <p><strong>Type:</strong> <span id="modalType">-</span></p>
       <p><strong>Address:</strong> <span id="modalAddress">-</span></p>
+
       <div class="map-container" id="mapContainer"></div>
-      <button class="select-btn" id="selectBtn">Select</button>
+
+      <button class="select-btn" id="selectBtn">Select Location</button>
     </div>
   </div>
 
-<footer>
-  <p>Visitors: 
-  <img src="https://visitor-badge.laobi.icu/badge?page_id=YourUserName.JungleBoysCOA" alt="visitor badge">
-</p>
-</footer>
-
+  <footer>
+    <p>
+      Visitors:
+      <img src="https://visitor-badge.laobi.icu/badge?page_id=YourUserName.JungleBoysCOA" />
+    </p>
+  </footer>
 <script>
   const locations = [
     { city: "Bonita Springs", type: "Pickup", address: "28751 S Tamiami Trail, Bonita Springs, FL 34134", retailer: "jungle-boys-bonita-springs" },
