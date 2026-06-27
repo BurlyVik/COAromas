@@ -215,6 +215,109 @@ td.highlight-cell { background-color: rgba(255,255,255,0.05) !important; }
     font-size: 1rem;
   }
 }
+
+    /* ===== PREVIEW MODAL (Jungle Boys style) ===== */
+
+.preview-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.preview-backdrop.active {
+  display: flex;
+}
+
+.preview-modal {
+  width: min(900px, 95vw);
+  max-height: 85vh;
+  overflow: hidden;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  box-shadow: 0 25px 70px rgba(0,0,0,0.6);
+}
+
+/* IMAGE SIDE */
+.preview-image {
+  background: #0f141c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.preview-image img {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+/* INFO SIDE */
+.preview-info {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.preview-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.preview-price {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.preview-link a {
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.preview-link a:hover {
+  text-decoration: underline;
+}
+
+/* TERP LIST */
+.terp-scroll {
+  margin-top: 10px;
+  padding: 10px;
+  background: #0f141c;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  flex: 1;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.terp-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  border-bottom: 1px dashed rgba(255,255,255,0.06);
+}
+
+.terp-row span:first-child {
+  color: var(--muted);
+}
+
+.terp-row span:last-child {
+  color: var(--text);
+}
   </style>
 
 </head>
@@ -242,7 +345,24 @@ td.highlight-cell { background-color: rgba(255,255,255,0.05) !important; }
   <div id="overlay" class="overlay" onclick="if(event.target.id==='overlay'){ this.style.display='none'; }">
     <div id="overlayContent" class="overlay-content"></div>
   </div>
+<!-- PRODUCT PREVIEW MODAL -->
+<div id="previewBackdrop" class="preview-backdrop">
+  <div class="preview-modal" id="previewModal">
 
+    <div class="preview-image">
+      <img id="previewImg" src="" />
+    </div>
+
+    <div class="preview-info">
+      <div class="preview-title" id="previewTitle">Product</div>
+      <div class="preview-price" id="previewPrice">$0.00</div>
+      <div class="preview-link" id="previewLink"></div>
+
+      <div class="terp-scroll" id="previewTerps"></div>
+    </div>
+
+  </div>
+</div>
 <script>
 const progressBar = document.getElementById("progressBar");
 function updateProgress(percent) { progressBar.style.width = percent + "%"; }
@@ -384,7 +504,21 @@ function createSortableTable(columns, data) {
     columns.forEach((col, colIndex) => {
       const td = tr.insertCell();
       if (col === "Image" && row[col]) {
-        td.innerHTML = `<img class="product-img" src="${row[col]}" alt="Image" />`;
+        td.innerHTML = `<img class="product-img" src="${row[col]}" alt="Image" style="cursor:pointer;" />`;
+
+td.querySelector("img").addEventListener("mouseenter", () => {
+  const product = products.find(p => p.images?.[0]?.url === row[col]) || row;
+
+  openPreview({
+    image: row[col],
+    name: row.ProductName?.replace(/<[^>]*>/g, ""),
+    price: row.Price,
+    link: product?.permalink || product?.link,
+    terpenes: Object.keys(row)
+      .filter(k => !["Image","Price","ProductName","Delivery"].includes(k))
+      .map(k => ({ name: k, value: row[k] }))
+  });
+});
       } else {
         td.innerHTML = row[col] || "";
       }
@@ -456,6 +590,52 @@ const terpeneDescriptions = {
       "Trans-Nerolidol": `🧴 <strong>Trans-Nerolidol</strong><br><br>• Smells like: Floral, apple, tea-tree oil<br>• Feels like: Sedating, chill<br>• Helps with: Skin healing, antibacterial`,
       "Bisabolol": `🌼 <strong>Bisabolol</strong><br><br>• Smells like: Sweet, floral (like chamomile)<br>• Feels like: Calm, soothing<br>• Helps with: Inflammation, skin repair, anxiety<br>• Fun fact: Main ingredient in chamomile’s relaxing effect`
     };
+
+  const previewBackdrop = document.getElementById("previewBackdrop");
+const previewImg = document.getElementById("previewImg");
+const previewTitle = document.getElementById("previewTitle");
+const previewPrice = document.getElementById("previewPrice");
+const previewLink = document.getElementById("previewLink");
+const previewTerps = document.getElementById("previewTerps");
+
+function openPreview(product) {
+  previewImg.src = product.image || "";
+  previewTitle.textContent = product.name || "Product";
+  previewPrice.textContent = product.price || "—";
+
+  previewLink.innerHTML = product.link
+    ? `<a href="${product.link}" target="_blank">View in Store</a>`
+    : "";
+
+  previewTerps.innerHTML = "";
+
+  if (product.terpenes?.length) {
+    product.terpenes.forEach(t => {
+      const row = document.createElement("div");
+      row.className = "terp-row";
+
+      row.innerHTML = `
+        <span>${t.name}</span>
+        <span>${t.value}</span>
+      `;
+
+      previewTerps.appendChild(row);
+    });
+  } else {
+    previewTerps.innerHTML =
+      "<div style='color:var(--muted)'>No terpene data</div>";
+  }
+
+  previewBackdrop.classList.add("active");
+}
+
+function closePreview() {
+  previewBackdrop.classList.remove("active");
+}
+
+previewBackdrop.addEventListener("click", (e) => {
+  if (e.target === previewBackdrop) closePreview();
+});
 </script>
 </body>
 </html>
