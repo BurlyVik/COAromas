@@ -508,7 +508,46 @@ function createSortableTable(columns, data) {
     columns.forEach(col => {
       const td = tr.insertCell();
       if (col === "Image" && row[col]) {
-        td.innerHTML = <img class="product-img" src="${row[col]}" alt="Image" style="cursor:pointer;" />;
+        if (col === "Image" && row[col]) {
+
+  const imgUrl = row[col];
+
+  td.innerHTML = `<img class="product-img" src="${imgUrl}" />`;
+
+  const imgEl = td.querySelector("img");
+
+  // 🔥 FIX: find product by ANY matching image, not Map lookup
+  const product = products.find(p =>
+    p.images?.some(img => img.url === imgUrl)
+  );
+
+  if (product) {
+    imgEl.addEventListener("pointerenter", () => {
+
+      const price = product.variants?.length
+        ? `$${parseFloat(
+            product.variants[0].price ??
+            product.variants[0].regular_price ??
+            0
+          ).toFixed(2)}`
+        : "—";
+
+      openPreview({
+        image: imgUrl,
+        name: product.name,
+        price,
+        link: product.permalink || product.link,
+        terpenes: (product.terpenes || []).map(t => ({
+          name: t.name,
+          value: t.value
+        }))
+      });
+
+    });
+
+    imgEl.addEventListener("mouseleave", closePreview);
+  }
+}
 
 td.querySelector("img").addEventListener("mouseenter", () => {
   const product = data.find(p => p.Image === row[col]) || row;
