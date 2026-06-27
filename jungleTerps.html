@@ -1,14 +1,3 @@
-Sticky header feel (clean spacing + structure)
-Table becomes “premium data grid”
-Bigger product images (much easier to inspect)
-Rounded panels + soft borders
-Better filter styling (chip-like dropdown container)
-Cleaner typography (Inter)
-Hover row highlight
-Better mobile responsiveness
-Overlay modal upgraded (glass style)
-Status + progress bar styled like dashboard
-✅ FULL UPDATED CODE (HTML + CSS ONLY IMPROVED)
 <!DOCTYPE html>
 <html lang="en">
 
@@ -263,3 +252,185 @@ Status + progress bar styled like dashboard
   </div>
 
 <script>
+const progressBar = document.getElementById("progressBar");
+function updateProgress(percent) { progressBar.style.width = percent + "%"; }
+updateProgress(5);
+
+const params = new URLSearchParams(window.location.search);
+const retailer = params.get("retailer") || "jungle-boys-tampa";
+const displayName = retailer.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+document.getElementById("pageTitle").textContent = `Terpenes — ${displayName}`;
+
+let allFetchedProducts = [];
+
+Promise.all([
+  fetch(`https://jungleboysflorida.com/wp-json/dovetail-api/v1/products?perpage=150&retailer=${retailer}&menutype=medical&categories[]=vape-pens`).then(r => r.json()),
+  fetch(`https://jungleboysflorida.com/wp-json/dovetail-api/v1/products?perpage=150&retailer=${retailer}&menutype=medical&categories[]=concentrates`).then(r => r.json()),
+  fetch(`https://jungleboysflorida.com/wp-json/dovetail-api/v1/products?perpage=150&retailer=${retailer}&menutype=medical&subcategory=premium-flower`).then(r => r.json()),
+  fetch(`https://jungleboysflorida.com/wp-json/dovetail-api/v1/products?perpage=150&retailer=${retailer}&menutype=medical&categories[]=pre-rolls`).then(r => r.json()),
+  fetch(`https://jungleboysflorida.com/wp-json/dovetail-api/v1/products?perpage=150&retailer=${retailer}&menutype=medical&subcategory=pops`).then(r => r.json())
+]).then(([vapeData, concData, flowerData, prerollData, popsData]) => {
+  updateProgress(40);
+
+  const vapeProducts = vapeData?.results ?? [];
+  const concProducts = concData?.results ?? [];
+  const flowerProducts = flowerData?.results ?? [];
+  const prerollProducts = prerollData?.results ?? [];
+  const popsProducts = popsData?.results ?? [];
+
+  vapeProducts.forEach(p => p._sourceCategory = "vape-pens");
+  concProducts.forEach(p => p._sourceCategory = "concentrates");
+  flowerProducts.forEach(p => p._sourceCategory = "premium-flower");
+  prerollProducts.forEach(p => p._sourceCategory = "pre-rolls");
+  popsProducts.forEach(p => p._sourceCategory = "pops");
+
+  allFetchedProducts = [...vapeProducts, ...concProducts, ...flowerProducts, ...prerollProducts, ...popsProducts];
+
+  updateProgress(80);
+  renderTerpeneTable(allFetchedProducts);
+  updateProgress(100);
+}).catch(err => {
+  document.getElementById("status").innerHTML = `<p class="error">Failed to load data for <strong>${displayName}</strong>.</p>`;
+  console.error(err);
+});
+
+document.getElementById("subcategoryFilter").addEventListener("change", function () {
+  const selected = this.value;
+  if (selected === "all") {
+    renderTerpeneTable(allFetchedProducts);
+  } else {
+    renderTerpeneTable(allFetchedProducts.filter(p => p._sourceCategory === selected));
+  }
+});
+
+function renderTerpeneTable(products) {
+  const excludedTerpenes = ["Guaiol", "Eucalyptol", "Isopulegol", "Nerolidol", "Terpinene"];
+  const allTerpenes = [...new Set(products.flatMap(p => (p.terpenes ?? [])
+    .map(t => t.name)
+    .filter(name => name && !excludedTerpenes.includes(name))
+  ))].sort();
+
+  const columns = ["Image", "Price", "ProductName", "Delivery", ...allTerpenes];
+  const retailerParam = new URLSearchParams(window.location.search).get("retailer") || "";
+
+  const rows = products.map(p => {
+    const terpMap = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, typeof t.value === "number" ? t.value.toFixed(2) : ""]));
+
+    let priceValue = "—";
+    if (Array.isArray(p.variants) && p.variants.length > 0) {
+      const variantPrice = p.variants[0].price ?? p.variants[0].regular_price;
+      if (variantPrice !== undefined && variantPrice !== null) {
+        priceValue = `$${parseFloat(variantPrice).toFixed(2)}`;
+      }
+    }
+
+    let productLink = p.permalink || p.link || "#";
+    if (retailerParam && productLink.includes("jungleboysflorida.com")) {
+      const urlObj = new URL(productLink);
+      urlObj.searchParams.set("retailer", retailerParam);
+      productLink = urlObj.toString();
+    }
+
+    return {
+      Image: p.images?.[0]?.url || "",
+      Price: priceValue,
+      ProductName: `<a class="product-link" href="${productLink}" target="_blank" rel="noopener noreferrer">${p.name}</a>`,
+      Delivery: p.subcategory || "",
+      ...Object.fromEntries(allTerpenes.map(t => [t, terpMap[t] ?? ""]))
+    };
+  });
+
+  createSortableTable(columns, rows);
+  document.getElementById("status").textContent = `Loaded ${rows.length} products.`;
+}
+
+function createSortableTable(columns, data) {
+  const table = document.createElement("table");
+  const thead = table.createTHead();
+  const headRow = thead.insertRow();
+
+  columns.forEach(col => {
+    const th = document.createElement("th");
+    th.style.textAlign = "center";
+    th.style.whiteSpace = "normal";
+
+    if (terpeneDescriptions[col]) {
+      const headerFlex = document.createElement("div");
+      headerFlex.style.display = "flex";
+      headerFlex.style.justifyContent = "space-between";
+      headerFlex.style.alignItems = "center";
+      headerFlex.style.width = "100%";
+
+      const colLabel = document.createElement("span");
+      colLabel.textContent = col;
+
+      const infoIcon = document.createElement("span");
+      infoIcon.className = "info-icon";
+      infoIcon.textContent = "ℹ️";
+      infoIcon.onclick = (e) => showDescription(e, col);
+
+      headerFlex.appendChild(colLabel);
+      headerFlex.appendChild(infoIcon);
+      th.appendChild(headerFlex);
+    } else {
+      th.textContent = col;
+    }
+
+    th.addEventListener("click", () => sortBy(col, data));
+    headRow.appendChild(th);
+  });
+
+  const tbody = table.createTBody();
+  data.forEach(row => {
+    const tr = tbody.insertRow();
+    columns.forEach(col => {
+      const td = tr.insertCell();
+      if (col === "Image" && row[col]) {
+        td.innerHTML = `<img class="product-img" src="${row[col]}" alt="Image" />`;
+      } else {
+        td.innerHTML = row[col] || "";
+      }
+    });
+  });
+
+  document.getElementById("tableContainer").innerHTML = "";
+  document.getElementById("tableContainer").appendChild(table);
+}
+
+function sortBy(col, data) {
+  const isNumeric = data.every(row => !isNaN(parseFloat(row[col])) || row[col] === "");
+  const sorted = [...data].sort((a, b) => {
+    const av = isNumeric ? parseFloat(a[col]) || 0 : (a[col] || "").toLowerCase();
+    const bv = isNumeric ? parseFloat(b[col]) || 0 : (b[col] || "").toLowerCase();
+    return isNumeric ? bv - av : av.localeCompare(bv);
+  });
+  createSortableTable(Object.keys(sorted[0]), sorted);
+}
+
+function showDescription(event, col) {
+  event.stopPropagation();
+  document.getElementById("overlayContent").innerHTML = terpeneDescriptions[col] || "No description.";
+  document.getElementById("overlay").style.display = "flex";
+}
+
+  // retrieved emojis from emojieDB
+const terpeneDescriptions = {
+      "Alpha Pinene": `🌲 <strong>Alpha Pinene</strong><br><br>• Smells like: Pine trees<br>• Feels like: Focused, alert, awake<br>• Helps with: Memory, asthma (opens airways)<br>• Real life: Found in pine needles, rosemary`,
+      "Beta Caryophyllene": `🧁 <strong>Beta Caryophyllene</strong><br><br>• Smells like: Peppery, spicy<br>• Feels like: Calm, pain relief<br>• Helps with: Anxiety, inflammation<br>• Cool fact: Binds to cannabinoid receptors`,
+      "Beta Myrcene": `🛋 <strong>Beta Myrcene</strong><br><br>• Smells like: Earthy, musky, mango<br>• Feels like: Super relaxed, sleepy<br>• Helps with: Pain, insomnia<br>• High dose = couch-lock`,
+      "Beta Pinene": `🌿 <strong>Beta Pinene</strong><br><br>• Smells like: Pine, herbs<br>• Feels like: Energized, clear-headed<br>• Helps with: Memory, mood, allergies`,
+      "Camphene": `🔥 <strong>Camphene</strong><br><br>• Smells like: Camphor (like Vicks VapoRub)<br>• Feels like: Clean, breathing easier<br>• Helps with: Inflammation, heart health (early studies)`,
+      "Caryophyllene Oxide": `🌶 <strong>Caryophyllene Oxide</strong><br><br>• Smells like: Spicy, woody<br>• Feels like: Calm, anti-inflammatory<br>• Helps with: Stress, fungi<br>• Bonus: What drug-sniffing dogs smell in weed`,
+      "Geraniol": `🌸 <strong>Geraniol</strong><br><br>• Smells like: Roses, sweet flowers<br>• Feels like: Uplifted, calm<br>• Helps with: Antioxidant support, possible anti-cancer benefits`,
+      "Humulene": `🍺 <strong>Humulene</strong><br><br>• Smells like: Hops, beer, wood<br>• Feels like: Not hungry, relaxed<br>• Helps with: Appetite control, pain relief`,
+      "Limonene": `🍋 <strong>Limonene</strong><br><br>• Smells like: Lemon, citrus<br>• Feels like: Happy, energized<br>• Helps with: Mood, anxiety, digestion`,
+      "Linalool": `🛀 <strong>Linalool</strong><br><br>• Smells like: Lavender<br>• Feels like: Sleepy, calm<br>• Helps with: Anxiety, pain, sleep`,
+      "Ocimene": `🌬 <strong>Ocimene</strong><br><br>• Smells like: Sweet, herbal, minty<br>• Feels like: Uplifted, alert<br>• Helps with: Antiviral, antifungal`,
+      "Para Cymene": `🧂 <strong>Para Cymene</strong><br><br>• Smells like: Mild spice, citrus<br>• Feels like: Subtle relaxation<br>• Helps with: Inflammation, infection-fighting`,
+      "Terpinolene": `🪵 <strong>Terpinolene</strong><br><br>• Smells like: Mixed — pine, floral, citrus<br>• Feels like: Uplifted, creative<br>• Helps with: Antioxidant, calm but not sleepy`,
+      "Trans-Nerolidol": `🧴 <strong>Trans-Nerolidol</strong><br><br>• Smells like: Floral, apple, tea-tree oil<br>• Feels like: Sedating, chill<br>• Helps with: Skin healing, antibacterial`,
+      "Bisabolol": `🌼 <strong>Bisabolol</strong><br><br>• Smells like: Sweet, floral (like chamomile)<br>• Feels like: Calm, soothing<br>• Helps with: Inflammation, skin repair, anxiety<br>• Fun fact: Main ingredient in chamomile’s relaxing effect`
+    };
+</script>
+</body>
+</html>
