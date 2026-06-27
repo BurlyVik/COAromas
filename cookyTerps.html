@@ -510,13 +510,6 @@ function sort(col, data){
   buildTable(Object.keys(sorted[0]), sorted);
 }
 
-/* =========================
-   REQUIRED OVERLAY SYSTEM (UNCHANGED)
-========================= */
-const terpeneDescriptions = {
-  /* YOUR FULL OBJECT UNCHANGED */
-};
-
 function showDescription(event, col){
   event.stopPropagation();
   document.getElementById("overlayContent").innerHTML =
