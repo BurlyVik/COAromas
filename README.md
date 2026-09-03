@@ -1,7 +1,7 @@
 # Live Terpene Viewer
 
 This project is a **client-side HTML/JavaScript web app** that displays **live terpene data** for multiple Florida cannabis brands, currently **Cookies Florida** and **Jungle Boys Florida**.
-It’s designed to make terpene information easy to browse, sort, and understand — whether you’re a patient, a dispensary employee, or just curious about what’s in your products.
+It’s designed to make terpene information easy to browse, sort, and understand - whether you’re a patient, a dispensary employee, or just curious about what’s in your products.
 
 ## Features
 
@@ -85,6 +85,6 @@ Clicking the ℹ️ icon in a terpene column shows a description that may includ
 
 ---
 
-**Note:** All brand logos and product imagery are the property of their respective owners — *Cookies* and *Jungle Boys*. This site is an independent project and not affiliated with either company.
+**Note:** All brand logos and product imagery are the property of their respective owners - *Cookies* and *Jungle Boys*. This site is an independent project and not affiliated with either company.
 
 Made with 💙 by [BurlyVik]
