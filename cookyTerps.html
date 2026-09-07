@@ -223,6 +223,32 @@
             font-weight: normal;
             text-transform: capitalize;
         }
+
+        .hover-preview-tooltip {
+            position: fixed;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 16px 32px rgba(0,0,0,0.6);
+            pointer-events: none;
+            display: none;
+            z-index: 2000;
+            width: 240px;
+            height: 240px;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+        .hover-preview-tooltip img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 8px;
+        }
+
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -274,6 +300,123 @@
         .close-btn:hover {
             border-color: var(--accent);
         }
+        .modal-header-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-right: 30px;
+            padding-bottom: 4px;
+        }
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .modal-sub {
+            font-size: 0.85rem;
+            color: var(--muted);
+            background: var(--panel2);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            display: inline-block;
+            margin-top: 4px;
+        }
+        .image-container {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+        }
+        .large-image-wrapper {
+            width: 100%;
+            height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .large-image-wrapper img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            background: #ffffff;
+        }
+        .terpene-list-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .terp-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 10px 14px;
+            border-radius: 10px;
+        }
+        .terp-name-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .terp-badge-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            background: rgba(0, 180, 216, 0.15);
+            color: var(--blue);
+        }
+        .terp-metric-area {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 0.8rem;
+        }
+        .terp-mg {
+            color: var(--muted);
+        }
+        .terp-pct {
+            color: var(--text);
+            font-weight: 700;
+            background: var(--panel2);
+            padding: 3px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+        .shop-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4px;
+        }
+        .shop-btn {
+            background: var(--accent);
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            flex: 1;
+        }
+        .shop-btn:hover {
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
@@ -319,7 +462,6 @@
                         <option value="all">All Sizes / Weights</option>
                     </select>
                 </div>
-                <!-- NEW VIBE FILTER ADDED HERE -->
                 <div class="filter-group">
                     <label>Terpene Vibe Filter</label>
                     <select id="vibeFilter" onchange="applyFilters()">
@@ -359,6 +501,11 @@
             </div>
         </div>
         <div class="grid-container" id="productGrid"></div>
+    </div>
+
+    <!-- HOVER PREVIEW TOOLTIP -->
+    <div class="hover-preview-tooltip" id="hoverPreview">
+        <img id="hoverPreviewImg" src="" alt="">
     </div>
 
     <!-- MODAL POPUP -->
@@ -575,7 +722,7 @@
             return 9999;
         }
 
-        // UNTOUCHED TERPENE CALCULATION LOGIC AS REQUESTED
+        // UNTOUCHED TERPENE CALCULATION LOGIC
         function getTotalTerpene(p) {
             if (!Array.isArray(p.terpenes) || p.terpenes.length === 0) return 0;
             
@@ -628,7 +775,6 @@
             });
         }
 
-        // VIBE FILTER MATCHING CHECKER BASED ON HIGHER RATED VALUES FOR SPECIFIC GROUPS
         function matchesVibe(p, vibeVal) {
             if (vibeVal === "all") return true;
             if (!Array.isArray(p.terpenes)) return false;
@@ -644,7 +790,6 @@
                 targetTerpenes = ["terpinolene", "ocimene"];
             }
 
-            // Calculate score for the chosen vibe group vs other common terpenes
             let vibeScore = 0;
             let otherScore = 0;
 
@@ -661,7 +806,6 @@
                 }
             });
 
-            // Product must have a dominant representation of the selected vibe group terpenes
             return vibeScore > 0 && vibeScore >= (otherScore * 0.35);
         }
 
@@ -757,8 +901,101 @@
                         </div>
                     </div>
                 `;
+
+                if (imgUrl) {
+                    const cardImg = card.querySelector("img");
+                    cardImg.addEventListener("mouseenter", (e) => {
+                        const tooltip = document.getElementById("hoverPreview");
+                        const tipImg = document.getElementById("hoverPreviewImg");
+                        tipImg.src = imgUrl;
+                        tooltip.style.display = "flex";
+                        tooltip.style.left = (e.clientX + 15) + "px";
+                        tooltip.style.top = (e.clientY - 120) + "px";
+                    });
+                    cardImg.addEventListener("mousemove", (e) => {
+                        const tooltip = document.getElementById("hoverPreview");
+                        tooltip.style.left = (e.clientX + 15) + "px";
+                        tooltip.style.top = (e.clientY - 120) + "px";
+                    });
+                    cardImg.addEventListener("mouseleave", () => {
+                        document.getElementById("hoverPreview").style.display = "none";
+                    });
+                }
+
+                card.addEventListener("click", () => openModal(p));
                 grid.appendChild(card);
             });
+        }
+
+        function openModal(p) {
+            const modalOverlay = document.getElementById("modalOverlay");
+            const modalBody = document.getElementById("modalBody");
+            
+            const title = p.name || p.title || "Unknown Product";
+            const subcat = p.subcategory || p.sub_category || p.subCategory || "";
+            const strain = p.strain_type || p.strainType || p.species || "";
+            const desc = p.description || p.excerpt || "No description provided.";
+            const imgUrl = p.image || p.thumbnail || (p.images && p.images[0]) || "";
+            const shopUrl = p.url || p.link || `https://cookiesflorida.co/shop`;
+
+            let terpenesHtml = "";
+            if (Array.isArray(p.terpenes) && p.terpenes.length > 0) {
+                terpenesHtml = p.terpenes.map(t => {
+                    const name = t.name || "Terpene";
+                    const val = t.value ?? t.percentage ?? t.amount ?? t.val ?? 0;
+                    const numVal = typeof val === "number" ? val : parseFloat(val) || 0;
+                    return `
+                        <div class="terp-row">
+                            <div class="terp-name-area">
+                                <div class="terp-badge-icon">🌿</div>
+                                <span>${name}</span>
+                            </div>
+                            <div class="terp-metric-area">
+                                <span class="terp-pct">${numVal.toFixed(2)}%</span>
+                            </div>
+                        </div>
+                    `;
+                }).join("");
+            } else {
+                terpenesHtml = `<div style="text-align: center; color: var(--muted); font-size: 0.85rem; padding: 10px;">No detailed terpene profile listed.</div>`;
+            }
+
+            modalBody.innerHTML = `
+                <div class="modal-header-info">
+                    <div class="modal-title">${title}</div>
+                    <div>
+                        ${subcat ? `<span class="modal-sub">${subcat}</span>` : ""}
+                        ${strain ? `<span class="modal-sub" style="margin-left: 6px;">${strain}</span>` : ""}
+                    </div>
+                </div>
+                ${imgUrl ? `
+                    <div class="image-container">
+                        <div class="large-image-wrapper">
+                            <img src="${imgUrl}" alt="${title}">
+                        </div>
+                    </div>
+                ` : ""}
+                <div style="font-size: 0.85rem; color: var(--muted); line-height: 1.4;">${desc}</div>
+                <div style="font-size: 0.85rem; font-weight: 700; margin-top: 4px;">Terpene Breakdown</div>
+                <div class="terpene-list-box">
+                    ${terpenesHtml}
+                </div>
+                <div class="shop-row">
+                    <a href="${shopUrl}" target="_blank" class="shop-btn">View on Cookies FL</a>
+                </div>
+            `;
+
+            modalOverlay.classList.add("active");
+        }
+
+        function closeModal() {
+            document.getElementById("modalOverlay").classList.remove("active");
+        }
+
+        function handleModalClick(e) {
+            if (e.target.id === "modalOverlay") {
+                closeModal();
+            }
         }
 
         init();
