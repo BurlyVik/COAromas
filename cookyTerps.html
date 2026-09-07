@@ -147,7 +147,6 @@
             border-color: var(--accent);
             transform: translateY(-2px);
         }
-        
         .card-selection-badge {
             position: absolute;
             top: 12px;
@@ -572,7 +571,6 @@
         const params = new URLSearchParams(window.location.search);
         const retailer = params.get("retailer") || "tampa";
         
-        // Dynamically update page title to show current selected store location nicely
         const formattedRetailerName = retailer.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
         document.getElementById("pageTitle").textContent = `Cookies ${formattedRetailerName} Inventory`;
 
@@ -611,6 +609,15 @@
             "terpinene": "Aromatic profile: Citrus, woody, and herbal. Medicinal uses: Acts as a potent antioxidant, protects cellular health, and fights harmful microbes.",
             "terpinolene": "Aromatic profile: Complex citrus, floral, and herbal. Medicinal uses: Offers uplifting yet calming effects, strong antioxidant defense, and mild sedation."
         };
+
+        function getProductImage(p) {
+            let img = p.image || p.image_url || (p.images && p.images[0]);
+            if (typeof img === 'object' && img !== null) {
+                img = img.url || img.src || img.file || Object.values(img)[0];
+            }
+            if (typeof img === 'string' && img.trim() !== '') return img;
+            return "https://via.placeholder.com/150?text=No+Image";
+        }
 
         async function init() {
             const statusDiv = document.getElementById("status");
@@ -924,7 +931,7 @@
                 const card = document.createElement("div");
                 card.className = "product-card";
 
-                const imgSrc = p.image || p.image_url || (p.images && p.images[0]) || "https://via.placeholder.com/150?text=No+Image";
+                const imgSrc = getProductImage(p);
                 const title = p.name || p.title || "Unnamed Product";
                 const desc = p.description || p.short_description || "No description available.";
                 
@@ -1016,13 +1023,27 @@
         function openModal(p) {
             const overlay = document.getElementById("modalOverlay");
             const body = document.getElementById("modalBody");
-            const imgSrc = p.image || p.image_url || (p.images && p.images[0]) || "https://via.placeholder.com/150?text=No+Image";
+            const imgSrc = getProductImage(p);
             const title = p.name || p.title || "Unnamed Product";
-            const sub = p.subcategory || p.strain_type || p._assignedCategory || "";
             
+            let priceNum = getProductPrice(p);
+            let priceStr = priceNum !== 9999 ? `$${priceNum.toFixed(2)}` : (p.price ? `$${parseFloat(p.price).toFixed(2)}` : "$0.00");
+            let totalTerpVal = getTotalTerpene(p);
+
             let terpRowsHtml = "";
             if (Array.isArray(p.terpenes) && p.terpenes.length > 0) {
-                terpRowsHtml = p.terpenes.map((t, idx) => {
+                // Sort or separate Total Terpenes to be at the top
+                let sortedTerps = [...p.terpenes].sort((a, b) => {
+                    const aIsTotal = a.name && a.name.toLowerCase().includes("total");
+                    const bIsTotal = b.name && b.name.toLowerCase().includes("total");
+                    if (aIsTotal) return -1;
+                    if (bIsTotal) return 1;
+                    const valA = parseFloat(a.value ?? a.percentage ?? a.amount ?? a.val) || 0;
+                    const valB = parseFloat(b.value ?? b.percentage ?? b.amount ?? b.val) || 0;
+                    return valB - valA;
+                });
+
+                terpRowsHtml = sortedTerps.map((t, idx) => {
                     const name = t.name || "Unknown";
                     const val = t.value ?? t.percentage ?? t.amount ?? t.val ?? "0";
                     const formattedVal = typeof val === "number" ? `${val}%` : val;
@@ -1045,7 +1066,7 @@
             body.innerHTML = `
                 <div class="modal-header-info">
                     <div class="modal-title">${title}</div>
-                    ${sub ? `<div class="modal-sub" style="text-transform: capitalize;">${sub}</div>` : ''}
+                    <div class="modal-sub">Cookies ${formattedRetailerName} • ${priceStr} • Total Terpenes: ${totalTerpVal.toFixed(2)}%</div>
                 </div>
                 ${p._activeSpecial ? `<div class="modal-special-banner">🔥 ${p._activeSpecial.name}</div>` : ''}
                 <div class="image-container">
