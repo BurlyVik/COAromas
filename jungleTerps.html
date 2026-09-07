@@ -1,622 +1,2560 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Live Terpene Viewer — Jungle Boys</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  <style>
-    :root{
-      --bg:#0e1116;
-      --panel:#161b22;
-      --panel2:#1c222d;
-      --text:#e6edf3;
-      --muted:#9aa7b2;
-      --accent:#46d66a;
-      --border:#2a313d;
-      --blue:#3b82f6;
-    }
-
-    *{
-      box-sizing:border-box;
-    }
-
-    body {
-      font-family: Inter, system-ui, sans-serif;
-      padding: 14px;
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    h1 {
-      text-align: center;
-      font-size: 1.6rem;
-      margin: 10px 0;
-      font-weight: 700;
-    }
-
-    #status {
-      text-align: center;
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-
-    /* PROGRESS BAR */
-    #progressBarContainer {
-      width: 100%;
-      max-width: 520px;
-      margin: 12px auto;
-      height: 10px;
-      border-radius: 999px;
-      background: #222834;
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-
-    #progressBar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--blue), var(--accent));
-      transition: width 0.3s ease;
-    }
-
-    /* FILTER */
-    #filterContainer {
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      gap:10px;
-      margin-top: 14px;
-    }
-
-    #subcategoryFilter {
-      background: var(--panel);
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-size: 0.95rem;
-      outline:none;
-      cursor:pointer;
-    }
-
-    /* TABLE WRAPPER */
-    #tableContainer{
-      margin-top: 18px;
-      overflow-x:auto;
-      padding: 0 6px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: var(--panel);
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-      font-size: 0.85rem;
-      table-layout: fixed;
-    }
-
-    th, td {
-      padding: 10px;
-      border-bottom: 1px solid var(--border);
-      text-align: center;
-      word-wrap: break-word;
-    }
-
-    th {
-      background: linear-gradient(180deg, var(--panel2), var(--panel));
-      color: var(--text);
-      font-weight: 600;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-      cursor: pointer;
-    }
-
-    tr:hover td{
-      background: rgba(70,214,106,0.06);
-    }
-
-    tr:nth-child(even) td {
-      background: rgba(255,255,255,0.02);
-    }
-
-    a.product-link {
-      color: var(--blue);
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    a.product-link:hover {
-      text-decoration: underline;
-    }
-
-    /* BIGGER PRODUCT IMAGES */
-    img.product-img {
-      max-width: 110px;
-      max-height: 110px;
-      object-fit: contain;
-      border-radius: 10px;
-      background: #111722;
-      padding: 6px;
-    }
-
-    /* HIGHLIGHTS (kept but cleaner) */
-    td.highlight-row { background-color: rgba(70,214,106,0.15) !important; }
-    td.highlight-col { background-color: rgba(123, 92, 255, 0.12) !important; }
-    td.highlight-cell { background-color: rgba(255,255,255,0.05) !important; }
-
-    /* INFO ICON */
-    .info-icon {
-      cursor: pointer;
-      opacity: 0.8;
-    }
-
-    .info-icon:hover{
-      opacity:1;
-    }
-
-    /* OVERLAY */
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 999;
-      padding: 14px;
-      backdrop-filter: blur(6px);
-    }
-
-    .overlay-content {
-      background: var(--panel);
-      padding: 22px;
-      border-radius: 16px;
-      max-width: 600px;
-      max-height: 80%;
-      overflow-y: auto;
-      border: 1px solid var(--border);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-      color: var(--text);
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
-
-    .error {
-      color: #ff6b6b;
-      text-align: center;
-    }
-
-    /* MOBILE */
-    @media (max-width: 768px) {
-      table {
-        font-size: 0.75rem;
-      }
-
-      img.product-img {
-        max-width: 70px;
-        max-height: 70px;
-      }
-
-      h1 {
-        font-size: 1.2rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      h1 {
-        font-size: 1rem;
-      }
-
-      #subcategoryFilter {
-        font-size: 0.85rem;
-      }
-    }
-
-    /* ===== PRODUCT PREVIEW TOAST ===== */
-
-.preview-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  backdrop-filter: blur(6px);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  padding: 20px;
-}
-
-.preview-backdrop.active {
-  display: flex;
-}
-
-.preview-modal {
-  width: min(900px, 95vw);
-  max-height: 85vh;
-  overflow: hidden;
-  background: #161b22;
-  border: 1px solid #2a313d;
-  border-radius: 18px;
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  box-shadow: 0 25px 70px rgba(0,0,0,0.6);
-}
-
-/* IMAGE SIDE */
-.preview-image {
-  background: #0f141c;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 18px;
-}
-
-.preview-image img {
-  max-width: 100%;
-  max-height: 70vh;
-  object-fit: contain;
-  border-radius: 12px;
-}
-
-/* INFO SIDE */
-.preview-info {
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow: hidden;
-}
-
-.preview-title {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.preview-price {
-  color: #46d66a;
-  font-weight: 700;
-  font-size: 16px;
-}
-
-.preview-link a {
-  color: #3b82f6;
-  text-decoration: none;
-}
-
-.preview-link a:hover {
-  text-decoration: underline;
-}
-
-/* TERP SECTION */
-.terp-scroll {
-  margin-top: 10px;
-  padding: 10px;
-  background: #0f141c;
-  border: 1px solid #2a313d;
-  border-radius: 12px;
-  flex: 1;
-  overflow-y: auto;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.terp-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 3px 0;
-  border-bottom: 1px dashed rgba(255,255,255,0.06);
-}
-
-.terp-row span:first-child {
-  color: #9aa7b2;
-}
-
-.terp-row span:last-child {
-  color: #e6edf3;
-}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Terpene Viewer — Jungle Boys</title>
+    <style>
+        :root {
+            --bg: #0b0e14;
+            --panel: #141923;
+            --panel2: #1b2230;
+            --text: #f0f6fc;
+            --muted: #8b949e;
+            --accent: #2ea043;
+            --border: #30363d;
+            --blue: #00b4d8;
+            --sale-red: #ff3366;
+            --color-pink: #ff2a70;
+            --color-cyan: #00b4d8;
+            --color-lime: #8ac926;
+            --gray-circle: #333b48;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Inter, system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 16px;
+            min-height: 100vh;
+        }
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        /* =========================================================
+           HEADER
+        ========================================================= */
+        .header-box {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-top h1 {
+            font-size: 1.35rem;
+            margin: 0 0 4px 0;
+            font-weight: 700;
+        }
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .reset-btn {
+            background: var(--panel2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .reset-btn:hover {
+            border-color: var(--sale-red);
+            color: var(--sale-red);
+        }
+        #status {
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+        /* =========================================================
+           FILTERS
+        ========================================================= */
+        .filters-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .filter-group.terpene-desc-group {
+            flex: 1;
+            min-width: 280px;
+        }
+        .filter-group label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+        .terpene-info-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--blue);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            line-height: 1.3;
+            min-height: 35px;
+            display: flex;
+            align-items: center;
+        }
+        select,
+        input {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        select:focus,
+        input:focus {
+            border-color: var(--accent);
+        }
+        /* =========================================================
+           PRODUCT GRID
+        ========================================================= */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        .product-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            min-height: 165px;
+        }
+        .product-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        /* =========================================================
+           SELECTION CIRCLE
+        ========================================================= */
+        .card-selection-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 10;
+        }
+        .select-circle {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            background: var(--gray-circle);
+            color: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .select-circle.pink {
+            background: var(--color-pink);
+            color: #fff;
+        }
+        .select-circle.cyan {
+            background: var(--color-cyan);
+            color: #000;
+        }
+        .select-circle.lime {
+            background: var(--color-lime);
+            color: #000;
+        }
+        /* =========================================================
+           CARD
+        ========================================================= */
+        .card-top {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            padding-right: 40px;
+        }
+        .product-card img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 6px;
+            flex-shrink: 0;
+            border: 1px solid var(--border);
+        }
+        .card-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .card-desc {
+            font-size: 0.75rem;
+            color: var(--muted);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.3;
+        }
+        .card-footer-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+            gap: 8px;
+        }
+        .card-price-area {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+        .card-price {
+            color: var(--text);
+            font-weight: 700;
+            font-size: 0.95rem;
+            line-height: 1;
+        }
+        .card-sale-badge {
+            background: rgba(255, 51, 102, 0.15);
+            color: var(--sale-red);
+            border: 1px solid rgba(255, 51, 102, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: inline-block;
+            width: max-content;
+            margin-top: 2px;
+        }
+        .card-terp-badge {
+            background: rgba(46, 160, 67, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(46, 160, 67, 0.3);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            align-self: flex-end;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .card-terp-label-name {
+            font-size: 0.7rem;
+            color: var(--muted);
+            font-weight: normal;
+            text-transform: capitalize;
+            max-width: 90px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        /* =========================================================
+           HOVER PREVIEW
+        ========================================================= */
+        .hover-preview-tooltip {
+            position: fixed;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.6);
+            pointer-events: none;
+            display: none;
+            z-index: 2000;
+            width: 240px;
+            height: 240px;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+        .hover-preview-tooltip img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 8px;
+        }
+        /* =========================================================
+           MODAL
+        ========================================================= */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+        .close-btn {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            background: var(--panel2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+        .close-btn:hover {
+            border-color: var(--accent);
+        }
+        .modal-header-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-right: 30px;
+            padding-bottom: 4px;
+        }
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        .modal-sub {
+            font-size: 0.85rem;
+            color: var(--muted);
+            background: var(--panel2);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            display: inline-block;
+            margin-top: 4px;
+        }
+        .modal-special-banner {
+            background: rgba(255, 51, 102, 0.12);
+            border: 1px solid rgba(255, 51, 102, 0.3);
+            color: var(--sale-red);
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .image-container {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+        }
+        .large-image-wrapper {
+            width: 100%;
+            height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .large-image-wrapper img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            background: #ffffff;
+        }
+        /* =========================================================
+           TERPENE LIST
+        ========================================================= */
+        .terpene-list-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+        .terp-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 10px 14px;
+            border-radius: 10px;
+            gap: 10px;
+        }
+        .terp-name-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .terp-badge-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            background: rgba(0, 180, 216, 0.15);
+            color: var(--blue);
+            flex-shrink: 0;
+        }
+        .terp-metric-area {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 0.8rem;
+        }
+        .terp-pct {
+            color: var(--text);
+            font-weight: 700;
+            background: var(--panel2);
+            padding: 3px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        /* =========================================================
+           SHOP BUTTON
+        ========================================================= */
+        .shop-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4px;
+        }
+        .shop-btn {
+            background: var(--accent);
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            flex: 1;
+        }
+        .shop-btn:hover {
+            opacity: 0.9;
+        }
+        /* =========================================================
+           LOADING
+        ========================================================= */
+        .loading-box {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: var(--muted);
+            padding: 50px 20px;
+        }
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        /* =========================================================
+           MOBILE
+        ========================================================= */
+        @media (max-width: 900px) {
+            .filters-row {
+                align-items: stretch;
+            }
+            .filter-group {
+                flex: 1;
+                min-width: 180px;
+            }
+            .filter-group.terpene-desc-group {
+                min-width: 100%;
+            }
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .header-box {
+                padding: 16px;
+            }
+            .header-top {
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .header-top h1 {
+                font-size: 1.1rem;
+            }
+            .header-actions {
+                flex-shrink: 0;
+            }
+            .reset-btn {
+                padding: 7px 10px;
+                font-size: 0.75rem;
+            }
+            .filter-group {
+                min-width: 100%;
+            }
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+            .modal-content {
+                padding: 18px;
+            }
+            .large-image-wrapper {
+                height: 180px;
+            }
+        }
+    </style>
 </head>
-
 <body>
-
-  <h1 id="pageTitle">Terpene Data</h1>
-  <div id="status">Loading...</div>
-
-  <div id="progressBarContainer">
-    <div id="progressBar"></div>
-  </div>
-
-  <div id="filterContainer">
-    <label style="font-weight:600; color:var(--muted);">Filter</label>
-    <select id="subcategoryFilter">
-      <option value="all">All Products</option>
-      <option value="vape-pens">Vapes</option>
-      <option value="concentrates">Concentrates</option>
-      <option value="premium-flower">Premium Flower</option>
-      <option value="pre-rolls">Pre-rolls</option>
-      <option value="pops">Pops</option>
-    </select>
-  </div>
-
-  <div id="tableContainer"></div>
-
-  <div id="overlay" class="overlay" onclick="if(event.target.id==='overlay'){ this.style.display='none'; }">
-    <div id="overlayContent" class="overlay-content"></div>
-  </div>
-
-  <div id="previewBackdrop" class="preview-backdrop">
-  <div class="preview-modal" id="previewModal">
-    
-    <div class="preview-image">
-      <img id="previewImg" src="" />
+    <div class="main-container">
+        <!-- =========================================================
+         HEADER
+    ========================================================== -->
+        <div class="header-box">
+            <div class="header-top">
+                <div>
+                    <h1 id="pageTitle">Jungle Boys Inventory</h1>
+                    <div id="status">Loading items...</div>
+                </div>
+                <div class="header-actions">
+                    <button class="reset-btn" onclick="resetAllFilters()">
+                        Reset Filters
+                    </button>
+                </div>
+            </div>
+            <!-- =====================================================
+             FILTERS
+        ====================================================== -->
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>Product Type</label>
+                    <select id="categoryFilter" onchange="applyFilters()">
+                        <option value="all">All Categories</option>
+                        <option value="vape-pens">
+                            Vapes
+                        </option>
+                        <option value="concentrates">
+                            Concentrates
+                        </option>
+                        <option value="premium-flower">
+                            Flower
+                        </option>
+                        <option value="pre-rolls">
+                            Pre-Rolls
+                        </option>
+                        <option value="pops">
+                            Pops
+                        </option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Delivery Type (Subcategory)</label>
+                    <select id="subcatFilter" onchange="applyFilters()">
+                        <option value="all">
+                            All Subcategories
+                        </option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Strain Type</label>
+                    <select id="strainFilter" onchange="applyFilters()">
+                        <option value="all">
+                            All Strain Types
+                        </option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Variant Option / Size</label>
+                    <select id="variantFilter" onchange="applyFilters()">
+                        <option value="all">
+                            All Sizes / Weights
+                        </option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Specials / Deals</label>
+                    <select id="specialFilter" onchange="applyFilters()">
+                        <option value="all">
+                            All Items (Specials & Regular)
+                        </option>
+                        <option value="on-sale">
+                            On Sale Only
+                        </option>
+                        <option value="none">
+                            Regular Price Only
+                        </option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>
+                        Vibe / Gravity Effect (does not determine ranking)
+                    </label>
+                    <select id="vibeFilter" onchange="applyFilters()">
+                        <option value="all">
+                            All Vibes & Gravity Effects
+                        </option>
+                        <option value="couch-lock">
+                            Couch Lock (Heavy Body)
+                        </option>
+                        <option value="hypogravity">
+                            Hypogravity (Floating / Dreamy)
+                        </option>
+                        <option value="hypergravity">
+                            Hypergravity (Grounded & Rooted)
+                        </option>
+                        <option value="deep-sleep">
+                            Deep Sleep & Relaxation
+                        </option>
+                        <option value="pain-relief">
+                            Pain Relief
+                        </option>
+                        <option value="energetic">
+                            Energetic & Uplifted
+                        </option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>
+                        Special Sort Mode
+                    </label>
+                    <select id="sortModeFilter" onchange="applyFilters()">
+                        <option value="default">
+                            Standard Sort
+                        </option>
+                        <option value="value-best">
+                            Highest Terpene + Lowest Price
+                        </option>
+                        <option value="targeted-best">
+                            Selected Terpene + Lowest Price
+                        </option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>
+                        Specific Terpene
+                    </label>
+                    <select id="terpeneFilter" onchange="onTerpeneChange()">
+                        <option value="all">
+                            All Terpenes
+                        </option>
+                    </select>
+                </div>
+                <div class="filter-group terpene-desc-group">
+                    <label>
+                        Medicinal Profile & Use
+                    </label>
+                    <div class="terpene-info-box" id="terpeneInfoDesc">
+                        Select a specific terpene to view its medicinal
+                        benefits and aromatic profile.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- =========================================================
+         PRODUCT GRID
+    ========================================================== -->
+        <div class="grid-container" id="productGrid">
+            <div class="loading-box">
+                <div class="spinner"></div>
+                Loading Jungle Boys inventory...
+            </div>
+        </div>
     </div>
-
-    <div class="preview-info">
-      <div class="preview-title" id="previewTitle">Product</div>
-
-      <div class="preview-price" id="previewPrice">$0.00</div>
-
-      <div class="preview-link" id="previewLink"></div>
-
-      <div class="terp-scroll" id="previewTerps"></div>
+    <!-- =============================================================
+     HOVER PREVIEW
+============================================================== -->
+    <div class="hover-preview-tooltip" id="hoverPreview">
+        <img id="hoverPreviewImg" src="" alt="">
     </div>
-
-  </div>
-</div>
-  
-<script>
-const progressBar = document.getElementById("progressBar");
-function updateProgress(percent) { progressBar.style.width = percent + "%"; }
-updateProgress(5);
-
-const params = new URLSearchParams(window.location.search);
-const retailer = params.get("retailer") || "jungle-boys-tampa";
-const displayName = retailer.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-document.getElementById("pageTitle").textContent = `Terpenes — ${displayName}`;
-
-let allFetchedProducts = [];
-
-Promise.all([
-  fetch(`https://jungleboysflorida.com/wp-json/dovetail-api/v1/products?perpage=150&retailer=${retailer}&menutype=medical&categories[]=vape-pens`).then(r => r.json()),
-  fetch(`https://jungleboysflorida.com/wp-json/dovetail-api/v1/products?perpage=150&retailer=${retailer}&menutype=medical&categories[]=concentrates`).then(r => r.json()),
-  fetch(`https://jungleboysflorida.com/wp-json/dovetail-api/v1/products?perpage=150&retailer=${retailer}&menutype=medical&subcategory=premium-flower`).then(r => r.json()),
-  fetch(`https://jungleboysflorida.com/wp-json/dovetail-api/v1/products?perpage=150&retailer=${retailer}&menutype=medical&categories[]=pre-rolls`).then(r => r.json()),
-  fetch(`https://jungleboysflorida.com/wp-json/dovetail-api/v1/products?perpage=150&retailer=${retailer}&menutype=medical&subcategory=pops`).then(r => r.json())
-]).then(([vapeData, concData, flowerData, prerollData, popsData]) => {
-  updateProgress(40);
-
-  const vapeProducts = vapeData?.results ?? [];
-  const concProducts = concData?.results ?? [];
-  const flowerProducts = flowerData?.results ?? [];
-  const prerollProducts = prerollData?.results ?? [];
-  const popsProducts = popsData?.results ?? [];
-
-  vapeProducts.forEach(p => p._sourceCategory = "vape-pens");
-  concProducts.forEach(p => p._sourceCategory = "concentrates");
-  flowerProducts.forEach(p => p._sourceCategory = "premium-flower");
-  prerollProducts.forEach(p => p._sourceCategory = "pre-rolls");
-  popsProducts.forEach(p => p._sourceCategory = "pops");
-
-  allFetchedProducts = [...vapeProducts, ...concProducts, ...flowerProducts, ...prerollProducts, ...popsProducts];
-
-  updateProgress(80);
-  renderTerpeneTable(allFetchedProducts);
-  updateProgress(100);
-}).catch(err => {
-  document.getElementById("status").innerHTML = `<p class="error">Failed to load data for <strong>${displayName}</strong>.</p>`;
-  console.error(err);
-});
-
-document.getElementById("subcategoryFilter").addEventListener("change", function () {
-  const selected = this.value;
-  if (selected === "all") {
-    renderTerpeneTable(allFetchedProducts);
-  } else {
-    renderTerpeneTable(allFetchedProducts.filter(p => p._sourceCategory === selected));
-  }
-});
-
-function renderTerpeneTable(products) {
-  const excludedTerpenes = ["Guaiol", "Eucalyptol", "Isopulegol", "Nerolidol", "Terpinene"];
-  const allTerpenes = [...new Set(products.flatMap(p => (p.terpenes ?? [])
-    .map(t => t.name)
-    .filter(name => name && !excludedTerpenes.includes(name))
-  ))].sort();
-
-  const columns = ["Image", "Price", "ProductName", "Delivery", ...allTerpenes];
-  const retailerParam = new URLSearchParams(window.location.search).get("retailer") || "";
-
-  const rows = products.map(p => {
-    const terpMap = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, typeof t.value === "number" ? t.value.toFixed(2) : ""]));
-
-    let priceValue = "—";
-    if (Array.isArray(p.variants) && p.variants.length > 0) {
-      const variantPrice = p.variants[0].price ?? p.variants[0].regular_price;
-      if (variantPrice !== undefined && variantPrice !== null) {
-        priceValue = `$${parseFloat(variantPrice).toFixed(2)}`;
-      }
-    }
-
-    let productLink = p.permalink || p.link || "#";
-    if (retailerParam && productLink.includes("jungleboysflorida.com")) {
-      const urlObj = new URL(productLink);
-      urlObj.searchParams.set("retailer", retailerParam);
-      productLink = urlObj.toString();
-    }
-
-    return {
-      Image: p.images?.[0]?.url || "",
-      Price: priceValue,
-      ProductName: `<a class="product-link" href="${productLink}" target="_blank" rel="noopener noreferrer">${p.name}</a>`,
-      Delivery: p.subcategory || "",
-      ...Object.fromEntries(allTerpenes.map(t => [t, terpMap[t] ?? ""]))
-    };
-  });
-
-  createSortableTable(columns, rows);
-  document.getElementById("status").textContent = `Loaded ${rows.length} products.`;
-}
-
-function createSortableTable(columns, data) {
-  const table = document.createElement("table");
-  const thead = table.createTHead();
-  const headRow = thead.insertRow();
-
-  columns.forEach(col => {
-    const th = document.createElement("th");
-    th.style.textAlign = "center";
-    th.style.whiteSpace = "normal";
-
-    if (terpeneDescriptions[col]) {
-      const headerFlex = document.createElement("div");
-      headerFlex.style.display = "flex";
-      headerFlex.style.justifyContent = "space-between";
-      headerFlex.style.alignItems = "center";
-      headerFlex.style.width = "100%";
-
-      const colLabel = document.createElement("span");
-      colLabel.textContent = col;
-
-      const infoIcon = document.createElement("span");
-      infoIcon.className = "info-icon";
-      infoIcon.textContent = "ℹ️";
-      infoIcon.onclick = (e) => showDescription(e, col);
-
-      headerFlex.appendChild(colLabel);
-      headerFlex.appendChild(infoIcon);
-      th.appendChild(headerFlex);
-    } else {
-      th.textContent = col;
-    }
-
-    th.addEventListener("click", () => sortBy(col, data));
-    headRow.appendChild(th);
-  });
-
-  const tbody = table.createTBody();
-  data.forEach(row => {
-    const tr = tbody.insertRow();
-    columns.forEach(col => {
-      const td = tr.insertCell();
-      if (col === "Image" && row[col]) {
-        td.innerHTML = `<img class="product-img" src="${row[col]}" alt="Image" style="cursor:pointer;" />`;
-
-td.querySelector("img").addEventListener("mouseenter", () => {
-  const product = data.find(p => p.Image === row[col]) || row;
-
-  openPreview({
-    image: row[col],
-    name: row.ProductName?.replace(/<[^>]*>/g, ""),
-    price: row.Price,
-    link: product?.ProductName?.match(/href="([^"]+)"/)?.[1],
-    terpenes: Object.keys(row)
-      .filter(k => !["Image","Price","ProductName","Delivery"].includes(k))
-      .map(k => ({ name: k, value: row[k] }))
-  });
-});
-      } else {
-        td.innerHTML = row[col] || "";
-      }
-    });
-  });
-
-  document.getElementById("tableContainer").innerHTML = "";
-  document.getElementById("tableContainer").appendChild(table);
-}
-
-function sortBy(col, data) {
-  const isNumeric = data.every(row => !isNaN(parseFloat(row[col])) || row[col] === "");
-  const sorted = [...data].sort((a, b) => {
-    const av = isNumeric ? parseFloat(a[col]) || 0 : (a[col] || "").toLowerCase();
-    const bv = isNumeric ? parseFloat(b[col]) || 0 : (b[col] || "").toLowerCase();
-    return isNumeric ? bv - av : av.localeCompare(bv);
-  });
-  createSortableTable(Object.keys(sorted[0]), sorted);
-}
-
-function showDescription(event, col) {
-  event.stopPropagation();
-  document.getElementById("overlayContent").innerHTML = terpeneDescriptions[col] || "No description.";
-  document.getElementById("overlay").style.display = "flex";
-}
-
-  // retrieved emojis from emojieDB
-const terpeneDescriptions = {
-      "Alpha Pinene": `🌲 <strong>Alpha Pinene</strong><br><br>• Smells like: Pine trees<br>• Feels like: Focused, alert, awake<br>• Helps with: Memory, asthma (opens airways)<br>• Real life: Found in pine needles, rosemary`,
-      "Beta Caryophyllene": `🧁 <strong>Beta Caryophyllene</strong><br><br>• Smells like: Peppery, spicy<br>• Feels like: Calm, pain relief<br>• Helps with: Anxiety, inflammation<br>• Cool fact: Binds to cannabinoid receptors`,
-      "Beta Myrcene": `🛋 <strong>Beta Myrcene</strong><br><br>• Smells like: Earthy, musky, mango<br>• Feels like: Super relaxed, sleepy<br>• Helps with: Pain, insomnia<br>• High dose = couch-lock`,
-      "Beta Pinene": `🌿 <strong>Beta Pinene</strong><br><br>• Smells like: Pine, herbs<br>• Feels like: Energized, clear-headed<br>• Helps with: Memory, mood, allergies`,
-      "Camphene": `🔥 <strong>Camphene</strong><br><br>• Smells like: Camphor (like Vicks VapoRub)<br>• Feels like: Clean, breathing easier<br>• Helps with: Inflammation, heart health (early studies)`,
-      "Caryophyllene Oxide": `🌶 <strong>Caryophyllene Oxide</strong><br><br>• Smells like: Spicy, woody<br>• Feels like: Calm, anti-inflammatory<br>• Helps with: Stress, fungi<br>• Bonus: What drug-sniffing dogs smell in weed`,
-      "Geraniol": `🌸 <strong>Geraniol</strong><br><br>• Smells like: Roses, sweet flowers<br>• Feels like: Uplifted, calm<br>• Helps with: Antioxidant support, possible anti-cancer benefits`,
-      "Humulene": `🍺 <strong>Humulene</strong><br><br>• Smells like: Hops, beer, wood<br>• Feels like: Not hungry, relaxed<br>• Helps with: Appetite control, pain relief`,
-      "Limonene": `🍋 <strong>Limonene</strong><br><br>• Smells like: Lemon, citrus<br>• Feels like: Happy, energized<br>• Helps with: Mood, anxiety, digestion`,
-      "Linalool": `🛀 <strong>Linalool</strong><br><br>• Smells like: Lavender<br>• Feels like: Sleepy, calm<br>• Helps with: Anxiety, pain, sleep`,
-      "Ocimene": `🌬 <strong>Ocimene</strong><br><br>• Smells like: Sweet, herbal, minty<br>• Feels like: Uplifted, alert<br>• Helps with: Antiviral, antifungal`,
-      "Para Cymene": `🧂 <strong>Para Cymene</strong><br><br>• Smells like: Mild spice, citrus<br>• Feels like: Subtle relaxation<br>• Helps with: Inflammation, infection-fighting`,
-      "Terpinolene": `🪵 <strong>Terpinolene</strong><br><br>• Smells like: Mixed — pine, floral, citrus<br>• Feels like: Uplifted, creative<br>• Helps with: Antioxidant, calm but not sleepy`,
-      "Trans-Nerolidol": `🧴 <strong>Trans-Nerolidol</strong><br><br>• Smells like: Floral, apple, tea-tree oil<br>• Feels like: Sedating, chill<br>• Helps with: Skin healing, antibacterial`,
-      "Bisabolol": `🌼 <strong>Bisabolol</strong><br><br>• Smells like: Sweet, floral (like chamomile)<br>• Feels like: Calm, soothing<br>• Helps with: Inflammation, skin repair, anxiety<br>• Fun fact: Main ingredient in chamomile’s relaxing effect`
-    };
-
-  const previewBackdrop = document.getElementById("previewBackdrop");
-const previewImg = document.getElementById("previewImg");
-const previewTitle = document.getElementById("previewTitle");
-const previewPrice = document.getElementById("previewPrice");
-const previewLink = document.getElementById("previewLink");
-const previewTerps = document.getElementById("previewTerps");
-
-/* OPEN PREVIEW */
-function openPreview(product) {
-  previewImg.src = product.image || "";
-  previewTitle.textContent = product.name || "Product";
-
-  previewPrice.textContent = product.price || "—";
-
-  previewLink.innerHTML = product.link
-    ? `<a href="${product.link}" target="_blank">View in Store</a>`
-    : "";
-
-  /* build terp list */
-  previewTerps.innerHTML = "";
-
-  if (product.terpenes && product.terpenes.length) {
-    product.terpenes.forEach(t => {
-      const row = document.createElement("div");
-      row.className = "terp-row";
-
-      row.innerHTML = `
-        <span>${t.name}</span>
-        <span>${typeof t.value === "number" ? t.value.toFixed(2) : t.value}</span>
-      `;
-
-      previewTerps.appendChild(row);
-    });
-  } else {
-    previewTerps.innerHTML = "<div style='color:#9aa7b2'>No terpene data</div>";
-  }
-
-  previewBackdrop.classList.add("active");
-}
-
-/* CLOSE */
-function closePreview() {
-  previewBackdrop.classList.remove("active");
-}
-
-/* click outside closes */
-previewBackdrop.addEventListener("click", (e) => {
-  if (e.target === previewBackdrop) closePreview();
-});
-</script>
+    <!-- =============================================================
+     PRODUCT MODAL
+============================================================== -->
+    <div class="modal-overlay" id="modalOverlay" onclick="handleModalClick(event)">
+        <div class="modal-content" id="modalContent">
+            <button class="close-btn" onclick="closeModal()">
+                ×
+            </button>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+    <script>
+        /* ================================================================
+           URL / RETAILER
+        ================================================================ */
+        const params = new URLSearchParams(window.location.search);
+        const retailer =
+            params.get("retailer") ||
+            "jungle-boys-tampa";
+        const formattedRetailerName = retailer
+            .split("-")
+            .map(word =>
+                word.charAt(0).toUpperCase() +
+                word.slice(1)
+            )
+            .join(" ");
+        document.getElementById("pageTitle").textContent =
+            `Jungle Boys ${formattedRetailerName} Inventory`;
+        /* ================================================================
+           API CONFIGURATION
+        ================================================================ */
+        const API_BASE =
+            "https://jungleboysflorida.com/wp-json/dovetail-api/v1";
+        const categories = [
+            "vape-pens",
+            "concentrates",
+            "premium-flower",
+            "pre-rolls",
+            "pops"
+        ];
+        let loadedProducts = [];
+        let loadedSpecials = [];
+        const allColors = [
+            "pink",
+            "cyan",
+            "lime"
+        ];
+        let userSelections = {};
+        /* ================================================================
+           TERPENE DATABASE
+        ================================================================ */
+        const terpeneDatabase = {
+            "alpha pinene":
+                "Aromatic profile: Sharp pine and rosemary. Often associated with alertness, respiratory support, and anti-inflammatory activity.",
+            "beta caryophyllene":
+                "Aromatic profile: Spicy, peppery, and woody. Known for interaction with CB2 receptors and commonly associated with pain and inflammation support.",
+            "beta myrcene":
+                "Aromatic profile: Earthy, musky, herbal, and clove-like. Commonly associated with physical relaxation, sedation, and pain support.",
+            "beta pinene":
+                "Aromatic profile: Fresh pine and woodsy notes. Commonly associated with alertness, respiratory support, and a clear-headed experience.",
+            "bisabolol":
+                "Aromatic profile: Floral, sweet, and chamomile-like. Associated with soothing, calming, and anti-inflammatory properties.",
+            "camphene":
+                "Aromatic profile: Pungent earth and fir notes. Research has explored antioxidant and cardiovascular-related properties.",
+            "caryophyllene oxide":
+                "Aromatic profile: Woody and dry spice. Associated with antifungal, antioxidant, and pain-related research.",
+            "eucalyptol":
+                "Aromatic profile: Minty, fresh, and eucalyptus-like. Commonly associated with respiratory and cooling properties.",
+            "geraniol":
+                "Aromatic profile: Rose-like, sweet, and fruity. Associated with antioxidant, antimicrobial, and neuroprotective research.",
+            "guaiol":
+                "Aromatic profile: Pine, wood, and rose. Research has examined anti-inflammatory and antimicrobial properties.",
+            "humulene":
+                "Aromatic profile: Woody, earthy, and hoppy. Commonly associated with anti-inflammatory properties and appetite-related effects.",
+            "isopulegol":
+                "Aromatic profile: Minty and herbal. Associated with calming, digestive, and antimicrobial research.",
+            "limonene":
+                "Aromatic profile: Bright citrus and lemon. Commonly associated with mood elevation, stress support, and citrus aroma.",
+            "linalool":
+                "Aromatic profile: Floral, lavender, and sweet. Commonly associated with calming, relaxation, and sleep-related effects.",
+            "nerolidol":
+                "Aromatic profile: Woody, bark-like, and floral. Often associated with relaxing and sedating characteristics.",
+            "trans-nerolidol":
+                "Aromatic profile: Floral, woody, tea-like, and fruity. Commonly associated with relaxing and sedating characteristics.",
+            "ocimene":
+                "Aromatic profile: Sweet, herbal, and tropical. Often associated with an uplifting and fresh aromatic profile.",
+            "para cymene":
+                "Aromatic profile: Mild spice and citrus. Research has explored antioxidant and antimicrobial properties.",
+            "terpinene":
+                "Aromatic profile: Citrus, woody, and herbal. Associated with antioxidant and antimicrobial research.",
+            "terpinolene":
+                "Aromatic profile: Complex citrus, floral, pine, and herbal notes. Often associated with uplifting yet relaxing characteristics."
+        };
+        /* ================================================================
+           VIBE MAPPINGS
+        ================================================================ */
+        const vibeMappings = {
+            "couch-lock": [
+                "beta myrcene",
+                "beta caryophyllene",
+                "linalool"
+            ],
+            "hypogravity": [
+                "terpinolene",
+                "limonene",
+                "ocimene"
+            ],
+            "hypergravity": [
+                "beta caryophyllene",
+                "humulene",
+                "bisabolol"
+            ],
+            "deep-sleep": [
+                "beta myrcene",
+                "nerolidol",
+                "trans-nerolidol",
+                "linalool"
+            ],
+            "pain-relief": [
+                "beta caryophyllene",
+                "guaiol",
+                "caryophyllene oxide"
+            ],
+            "energetic": [
+                "alpha pinene",
+                "beta pinene",
+                "limonene",
+                "ocimene"
+            ]
+        };
+        /* ================================================================
+           VIBE SCORE
+        ================================================================ */
+        function getVibeScore(p, vibeName) {
+            if (!vibeName || vibeName === "all") {
+                return 0;
+            }
+            const targetTerpenes =
+                vibeMappings[vibeName];
+            if (
+                !Array.isArray(targetTerpenes) ||
+                targetTerpenes.length === 0
+            ) {
+                return 0;
+            }
+            let score = 0;
+            let matchedTerpenes = 0;
+            targetTerpenes.forEach(terpName => {
+                const value =
+                    getSpecificTerpeneVal(
+                        p,
+                        terpName
+                    );
+                if (value > 0) {
+                    matchedTerpenes++;
+                    score += value;
+                }
+            });
+            if (matchedTerpenes > 1) {
+                score +=
+                    matchedTerpenes * 0.25;
+            }
+            return score;
+        }
+        /* ================================================================
+           INITIALIZE
+        ================================================================ */
+        /* ================================================================
+   INITIALIZE
+================================================================ */
+        async function init() {
+            const statusDiv =
+                document.getElementById("status");
+            try {
+                /* ========================================================
+                   PRODUCT REQUESTS
+                ======================================================== */
+                const productRequests =
+                    categories.map(category => {
+                        let url;
+                        /*
+                         * Flower and Pops use the subcategory endpoint.
+                         * The other categories use categories[].
+                         */
+                        if (
+                            category === "premium-flower" ||
+                            category === "pops"
+                        ) {
+                            url =
+                                `${API_BASE}/products?` +
+                                `page=1` +
+                                `&perpage=150` +
+                                `&orderby=popular` +
+                                `&order=desc` +
+                                `&retailer=${encodeURIComponent(retailer)}` +
+                                `&menutype=medical` +
+                                `&subcategory=${encodeURIComponent(category)}`;
+                        } else {
+                            url =
+                                `${API_BASE}/products?` +
+                                `page=1` +
+                                `&perpage=150` +
+                                `&orderby=popular` +
+                                `&order=desc` +
+                                `&retailer=${encodeURIComponent(retailer)}` +
+                                `&menutype=medical` +
+                                `&categories[]=${encodeURIComponent(category)}`;
+                        }
+                        return {
+                            category,
+                            url
+                        };
+                    });
+                /* ========================================================
+                   SPECIALS REQUEST
+                ======================================================== */
+                const specialsRequest =
+                    fetch(
+                        `${API_BASE}/specials?` +
+                        `retailer=${encodeURIComponent(retailer)}` +
+                        `&menutype=medical`
+                    )
+                        .then(response =>
+                            response.ok
+                                ? response.json()
+                                : null
+                        )
+                        .catch(() => null);
+                /* ========================================================
+                   LOAD PRODUCTS + SPECIALS
+                ======================================================== */
+                const productResponses =
+                    await Promise.all(
+                        productRequests.map(async request => {
+                            try {
+                                const response =
+                                    await fetch(request.url);
+                                if (!response.ok) {
+                                    throw new Error(
+                                        `HTTP ${response.status}`
+                                    );
+                                }
+                                const data =
+                                    await response.json();
+                                return {
+                                    category:
+                                        request.category,
+                                    data
+                                };
+                            } catch (error) {
+                                console.error(
+                                    `Failed loading ${request.category}:`,
+                                    error
+                                );
+                                return {
+                                    category:
+                                        request.category,
+                                    data: null
+                                };
+                            }
+                        })
+                    );
+                const specialsData =
+                    await specialsRequest;
+                /* ========================================================
+                   SPECIALS
+                ======================================================== */
+                loadedSpecials = [];
+                if (specialsData) {
+                    if (
+                        Array.isArray(
+                            specialsData
+                        )
+                    ) {
+                        loadedSpecials =
+                            specialsData;
+                    } else if (
+                        Array.isArray(
+                            specialsData.specials
+                        )
+                    ) {
+                        loadedSpecials =
+                            specialsData.specials;
+                    }
+                }
+                console.log(
+                    "Jungle Boys: specials loaded",
+                    loadedSpecials
+                );
+                /* ========================================================
+                   PRODUCTS
+                ======================================================== */
+                loadedProducts = [];
+                productResponses.forEach(result => {
+                    let results = [];
+                    if (
+                        result.data &&
+                        Array.isArray(
+                            result.data.results
+                        )
+                    ) {
+                        results =
+                            result.data.results;
+                    } else if (
+                        result.data &&
+                        Array.isArray(
+                            result.data.products
+                        )
+                    ) {
+                        results =
+                            result.data.products;
+                    } else if (
+                        result.data &&
+                        Array.isArray(
+                            result.data.data
+                        )
+                    ) {
+                        results =
+                            result.data.data;
+                    } else if (
+                        Array.isArray(
+                            result.data
+                        )
+                    ) {
+                        results =
+                            result.data;
+                    }
+                    console.log(
+                        `Jungle Boys: ${result.category} returned ${results.length} products`
+                    );
+                    results.forEach(product => {
+                        /*
+                         * Remember which category produced this item.
+                         */
+                        product._assignedCategory =
+                            result.category;
+                        /*
+                         * Determine whether the product has
+                         * an actual variant-level sale.
+                         */
+                        const hasVariantSale =
+                            Array.isArray(product.variants) &&
+                            product.variants.some(variant => {
+                                const salePrice =
+                                    parseFloat(
+                                        variant.sale_price
+                                    );
+                                const regularPrice =
+                                    parseFloat(
+                                        variant.price ??
+                                        variant.regular_price
+                                    );
+                                return (
+                                    !isNaN(salePrice) &&
+                                    !isNaN(regularPrice) &&
+                                    salePrice < regularPrice
+                                );
+                            });
+                        const hasProductSale =
+                            !!(
+                                product.sale ||
+                                product.special ||
+                                product.discount ||
+                                hasVariantSale
+                            );
+                        const saleSpecial =
+                            loadedSpecials.find(special => {
+                                if (!special) {
+                                    return false;
+                                }
+                                const type =
+                                    String(
+                                        special.type || ""
+                                    )
+                                        .trim()
+                                        .toUpperCase();
+                                return type === "SALE";
+                            });
+                        /*
+                         * Attach the first active special
+                         * when applicable.
+                         */
+                        if (
+                            hasProductSale
+                        ) {
+                            /*
+                             * Product itself reports a sale.
+                             *
+                             * Use the Jungle Boys SALE special when available.
+                             */
+                            product._activeSpecial =
+                                saleSpecial ||
+                                loadedSpecials[0] ||
+                                null;
+                        } else if (
+                            saleSpecial
+                        ) {
+                            /*
+                             * Jungle Boys exposes the sale through the specials
+                             * endpoint rather than directly on the product.
+                             *
+                             * Mark the product as having an active special.
+                             */
+                            product._activeSpecial =
+                                saleSpecial;
+                        } else {
+                            product._activeSpecial =
+                                null;
+                        }
+                        loadedProducts.push(
+                            product
+                        );
+                    });
+                });
+                console.log(
+                    "Jungle Boys: loadedProducts before dedupe",
+                    loadedProducts
+                );
+                /* ========================================================
+                   REMOVE DUPLICATES
+                ======================================================== */
+                const seenProducts =
+                    new Set();
+                loadedProducts =
+                    loadedProducts.filter(product => {
+                        const productId =
+                            product.id ||
+                            product._id ||
+                            product.slug ||
+                            product.name;
+                        /*
+                         * If there is no usable ID,
+                         * keep the product.
+                         */
+                        if (!productId) {
+                            return true;
+                        }
+                        if (
+                            seenProducts.has(
+                                productId
+                            )
+                        ) {
+                            return false;
+                        }
+                        seenProducts.add(
+                            productId
+                        );
+                        return true;
+                    });
+                console.log(
+                    "Jungle Boys: loadedProducts after dedupe",
+                    loadedProducts
+                );
+                /* ========================================================
+                   STATUS
+                ======================================================== */
+                if (
+                    loadedProducts.length === 0
+                ) {
+                    statusDiv.textContent =
+                        `No products available for ${formattedRetailerName}.`;
+                    return;
+                }
+                statusDiv.textContent =
+                    `Loaded ${loadedProducts.length} items for ${formattedRetailerName}`;
+                /* ========================================================
+                   POPULATE FILTERS
+                ======================================================== */
+                populateDropdowns();
+                /* ========================================================
+                   INITIAL RENDER
+                ======================================================== */
+                applyFilters();
+            } catch (error) {
+                console.error(
+                    "Inventory loading error:",
+                    error
+                );
+                statusDiv.textContent =
+                    `Failed to load inventory data for ${formattedRetailerName}.`;
+            }
+        }
+        /* ========================================================
+           FILTER DROPDOWNS
+        ======================================================== */
+        function populateDropdowns() {
+            const terpSet =
+                new Set();
+            const subcatSet =
+                new Set();
+            const strainSet =
+                new Set();
+            const variantSet =
+                new Set();
+            loadedProducts.forEach(product => {
+                /* ---------------------------------------------
+                   TERPENES
+                --------------------------------------------- */
+                if (
+                    Array.isArray(product.terpenes)
+                ) {
+                    product.terpenes.forEach(terpene => {
+                        if (
+                            terpene.name &&
+                            !terpene.name
+                                .toLowerCase()
+                                .includes("total")
+                        ) {
+                            terpSet.add(
+                                terpene.name.trim()
+                            );
+                        }
+                    });
+                }
+                /* ---------------------------------------------
+                   SUBCATEGORY
+                --------------------------------------------- */
+                const subcategory =
+                    product.subcategory ||
+                    product.sub_category ||
+                    product.subCategory;
+                if (
+                    subcategory &&
+                    typeof subcategory === "string"
+                ) {
+                    subcatSet.add(
+                        subcategory.trim()
+                    );
+                }
+                /* ---------------------------------------------
+                   STRAIN TYPE
+                --------------------------------------------- */
+                const strain =
+                    product.strain_type ||
+                    product.strainType ||
+                    product.species;
+                if (
+                    strain &&
+                    typeof strain === "string"
+                ) {
+                    strainSet.add(
+                        strain.trim()
+                    );
+                }
+                /* ---------------------------------------------
+                   VARIANTS
+                --------------------------------------------- */
+                if (
+                    Array.isArray(product.variants)
+                ) {
+                    product.variants.forEach(variant => {
+                        const variantName =
+                            variant.name ||
+                            variant.option ||
+                            variant.weight ||
+                            variant.size ||
+                            variant.title;
+                        if (
+                            variantName &&
+                            typeof variantName === "string"
+                        ) {
+                            variantSet.add(
+                                variantName.trim()
+                            );
+                        }
+                    });
+                }
+            });
+            /* ========================================================
+               TERPENE FILTER
+            ======================================================== */
+            const terpeneSelect =
+                document.getElementById(
+                    "terpeneFilter"
+                );
+            Array.from(terpSet)
+                .sort(
+                    (a, b) =>
+                        a.localeCompare(b)
+                )
+                .forEach(name => {
+                    const option =
+                        document.createElement(
+                            "option"
+                        );
+                    option.value =
+                        name;
+                    option.textContent =
+                        name;
+                    terpeneSelect.appendChild(
+                        option
+                    );
+                });
+            /* ========================================================
+               SUBCATEGORY FILTER
+            ======================================================== */
+            const subcatSelect =
+                document.getElementById(
+                    "subcatFilter"
+                );
+            Array.from(subcatSet)
+                .sort(
+                    (a, b) =>
+                        a.localeCompare(b)
+                )
+                .forEach(name => {
+                    const option =
+                        document.createElement(
+                            "option"
+                        );
+                    option.value =
+                        name;
+                    option.textContent =
+                        name;
+                    subcatSelect.appendChild(
+                        option
+                    );
+                });
+            /* ========================================================
+               STRAIN FILTER
+            ======================================================== */
+            const strainSelect =
+                document.getElementById(
+                    "strainFilter"
+                );
+            Array.from(strainSet)
+                .sort(
+                    (a, b) =>
+                        a.localeCompare(b)
+                )
+                .forEach(name => {
+                    const option =
+                        document.createElement(
+                            "option"
+                        );
+                    option.value =
+                        name;
+                    option.textContent =
+                        name;
+                    strainSelect.appendChild(
+                        option
+                    );
+                });
+            /* ========================================================
+               VARIANT FILTER
+            ======================================================== */
+            const variantSelect =
+                document.getElementById(
+                    "variantFilter"
+                );
+            Array.from(variantSet)
+                .sort(
+                    (a, b) =>
+                        a.localeCompare(b)
+                )
+                .forEach(name => {
+                    const option =
+                        document.createElement(
+                            "option"
+                        );
+                    option.value =
+                        name;
+                    option.textContent =
+                        name;
+                    variantSelect.appendChild(
+                        option
+                    );
+                });
+        }
+        /* ========================================================
+           TERPENE DESCRIPTION
+        ======================================================== */
+        function onTerpeneChange() {
+            const terpeneValue =
+                document.getElementById(
+                    "terpeneFilter"
+                ).value;
+            const descriptionBox =
+                document.getElementById(
+                    "terpeneInfoDesc"
+                );
+            if (
+                terpeneValue === "all"
+            ) {
+                descriptionBox.textContent =
+                    "Select a specific terpene to view its medicinal benefits and aromatic profile.";
+            } else {
+                const key =
+                    terpeneValue
+                        .trim()
+                        .toLowerCase();
+                if (
+                    terpeneDatabase[key]
+                ) {
+                    descriptionBox.textContent =
+                        terpeneDatabase[key];
+                } else {
+                    descriptionBox.textContent =
+                        `Aromatic and therapeutic compound profile for ${terpeneValue}. Contributes to the entourage effect and targeted medicinal symptom relief.`;
+                }
+            }
+            applyFilters();
+        }
+        /* ========================================================
+           RESET FILTERS
+        ======================================================== */
+        function resetAllFilters() {
+            document.getElementById(
+                "categoryFilter"
+            ).value = "all";
+            document.getElementById(
+                "subcatFilter"
+            ).value = "all";
+            document.getElementById(
+                "strainFilter"
+            ).value = "all";
+            document.getElementById(
+                "variantFilter"
+            ).value = "all";
+            document.getElementById(
+                "specialFilter"
+            ).value = "all";
+            document.getElementById(
+                "vibeFilter"
+            ).value = "all";
+            document.getElementById(
+                "sortModeFilter"
+            ).value = "default";
+            document.getElementById(
+                "terpeneFilter"
+            ).value = "all";
+            document.getElementById(
+                "terpeneInfoDesc"
+            ).textContent =
+                "Select a specific terpene to view its medicinal benefits and aromatic profile.";
+            applyFilters();
+        }
+        /* ========================================================
+           PRICE
+        ======================================================== */
+        function getProductPrice(product) {
+            if (
+                Array.isArray(product.variants) &&
+                product.variants.length > 0
+            ) {
+                const prices =
+                    product.variants
+                        .map(variant => {
+                            const salePrice =
+                                parseFloat(
+                                    variant.sale_price
+                                );
+                            const regularPrice =
+                                parseFloat(
+                                    variant.price ??
+                                    variant.regular_price
+                                );
+                            if (
+                                !isNaN(salePrice) &&
+                                !isNaN(regularPrice) &&
+                                salePrice < regularPrice
+                            ) {
+                                return salePrice;
+                            }
+                            if (
+                                !isNaN(regularPrice)
+                            ) {
+                                return regularPrice;
+                            }
+                            return NaN;
+                        })
+                        .filter(
+                            value =>
+                                !isNaN(value)
+                        );
+                if (
+                    prices.length > 0
+                ) {
+                    return Math.min(
+                        ...prices
+                    );
+                }
+            }
+            return 9999;
+        }
+        /* ========================================================
+           TOTAL TERPENES
+        ======================================================== */
+        function getTotalTerpene(product) {
+            if (
+                !Array.isArray(
+                    product.terpenes
+                ) ||
+                product.terpenes.length === 0
+            ) {
+                return 0;
+            }
+            const totalEntry =
+                product.terpenes.find(
+                    terpene =>
+                        terpene.name &&
+                        terpene.name
+                            .toLowerCase()
+                            .includes("total")
+                );
+            if (
+                totalEntry
+            ) {
+                const value =
+                    totalEntry.value ??
+                    totalEntry.percentage ??
+                    totalEntry.amount ??
+                    totalEntry.val;
+                return typeof value === "number"
+                    ? value
+                    : parseFloat(value) || 0;
+            }
+            let total = 0;
+            product.terpenes.forEach(
+                terpene => {
+                    if (
+                        terpene.name &&
+                        terpene.name
+                            .toLowerCase()
+                            .includes("total")
+                    ) {
+                        return;
+                    }
+                    const value =
+                        terpene.value ??
+                        terpene.percentage ??
+                        terpene.amount ??
+                        terpene.val;
+                    total +=
+                        typeof value === "number"
+                            ? value
+                            : parseFloat(value) || 0;
+                }
+            );
+            return total;
+        }
+        /* ========================================================
+           SPECIFIC TERPENE
+        ======================================================== */
+        function getSpecificTerpeneVal(
+            product,
+            terpeneName
+        ) {
+            if (
+                !Array.isArray(
+                    product.terpenes
+                )
+            ) {
+                return 0;
+            }
+            const found =
+                product.terpenes.find(
+                    terpene =>
+                        terpene.name &&
+                        terpene.name
+                            .trim()
+                            .toLowerCase() ===
+                        terpeneName
+                            .trim()
+                            .toLowerCase()
+                );
+            if (
+                !found
+            ) {
+                return 0;
+            }
+            const value =
+                found.value ??
+                found.percentage ??
+                found.amount ??
+                found.val;
+            return typeof value === "number"
+                ? value
+                : parseFloat(value) || 0;
+        }
+        /* ========================================================
+           SUBCATEGORY MATCH
+        ======================================================== */
+        function matchesSubcategory(
+            product,
+            filterValue
+        ) {
+            if (
+                filterValue === "all"
+            ) {
+                return true;
+            }
+            const value =
+                product.subcategory ||
+                product.sub_category ||
+                product.subCategory ||
+                "";
+            return value
+                .toString()
+                .trim()
+                .toLowerCase() ===
+                filterValue
+                    .toString()
+                    .trim()
+                    .toLowerCase();
+        }
+        /* ========================================================
+           STRAIN MATCH
+        ======================================================== */
+        function matchesStrainType(
+            product,
+            filterValue
+        ) {
+            if (
+                filterValue === "all"
+            ) {
+                return true;
+            }
+            const value =
+                product.strain_type ||
+                product.strainType ||
+                product.species ||
+                "";
+            return value
+                .toString()
+                .trim()
+                .toLowerCase() ===
+                filterValue
+                    .toString()
+                    .trim()
+                    .toLowerCase();
+        }
+        /* ========================================================
+           VARIANT MATCH
+        ======================================================== */
+        function matchesVariantOption(
+            product,
+            filterValue
+        ) {
+            if (
+                filterValue === "all"
+            ) {
+                return true;
+            }
+            if (
+                !Array.isArray(
+                    product.variants
+                )
+            ) {
+                return false;
+            }
+            return product.variants.some(
+                variant => {
+                    const name =
+                        variant.name ||
+                        variant.option ||
+                        variant.weight ||
+                        variant.size ||
+                        variant.title;
+                    return (
+                        name &&
+                        name
+                            .toString()
+                            .trim()
+                            .toLowerCase() ===
+                        filterValue
+                            .toString()
+                            .trim()
+                            .toLowerCase()
+                    );
+                }
+            );
+        }
+        /* ========================================================
+           SPECIAL MATCH
+        ======================================================== */
+        function matchesSpecialFilter(
+            product,
+            filterValue
+        ) {
+            if (
+                filterValue === "all"
+            ) {
+                return true;
+            }
+            const hasSpecial =
+                !!product._activeSpecial;
+            if (
+                filterValue === "on-sale"
+            ) {
+                return hasSpecial;
+            }
+            if (
+                filterValue === "none"
+            ) {
+                return !hasSpecial;
+            }
+            return true;
+        }
+        /* ========================================================
+           APPLY FILTERS
+        ======================================================== */
+        function applyFilters() {
+            const categoryValue =
+                document.getElementById(
+                    "categoryFilter"
+                ).value;
+            const subcategoryValue =
+                document.getElementById(
+                    "subcatFilter"
+                ).value;
+            const strainValue =
+                document.getElementById(
+                    "strainFilter"
+                ).value;
+            const variantValue =
+                document.getElementById(
+                    "variantFilter"
+                ).value;
+            const specialValue =
+                document.getElementById(
+                    "specialFilter"
+                ).value;
+            const vibeValue =
+                document.getElementById(
+                    "vibeFilter"
+                ).value;
+            const terpeneValue =
+                document.getElementById(
+                    "terpeneFilter"
+                ).value;
+            const sortMode =
+                document.getElementById(
+                    "sortModeFilter"
+                ).value;
+            let filtered =
+                loadedProducts.filter(
+                    product => {
+                        /* CATEGORY */
+                        if (
+                            categoryValue !== "all" &&
+                            product._assignedCategory !==
+                            categoryValue
+                        ) {
+                            return false;
+                        }
+                        /* SUBCATEGORY */
+                        if (
+                            !matchesSubcategory(
+                                product,
+                                subcategoryValue
+                            )
+                        ) {
+                            return false;
+                        }
+                        /* STRAIN */
+                        if (
+                            !matchesStrainType(
+                                product,
+                                strainValue
+                            )
+                        ) {
+                            return false;
+                        }
+                        /* VARIANT */
+                        if (
+                            !matchesVariantOption(
+                                product,
+                                variantValue
+                            )
+                        ) {
+                            return false;
+                        }
+                        /* SPECIAL */
+                        if (
+                            !matchesSpecialFilter(
+                                product,
+                                specialValue
+                            )
+                        ) {
+                            return false;
+                        }
+                        /* TERPENE */
+                        if (
+                            terpeneValue !== "all"
+                        ) {
+                            const value =
+                                getSpecificTerpeneVal(
+                                    product,
+                                    terpeneValue
+                                );
+                            if (
+                                value <= 0
+                            ) {
+                                return false;
+                            }
+                        }
+                        /* VIBE */
+                        if (
+                            vibeValue !== "all"
+                        ) {
+                            const vibeScore =
+                                getVibeScore(
+                                    product,
+                                    vibeValue
+                                );
+                            if (
+                                vibeScore <= 0
+                            ) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                );
+            /* ========================================================
+               VIBE SORT
+            ======================================================== */
+            if (
+                vibeValue !== "all"
+            ) {
+                filtered.sort(
+                    (a, b) => {
+                        const scoreA =
+                            getVibeScore(
+                                a,
+                                vibeValue
+                            );
+                        const scoreB =
+                            getVibeScore(
+                                b,
+                                vibeValue
+                            );
+                        if (
+                            Math.abs(
+                                scoreB - scoreA
+                            ) > 0.0001
+                        ) {
+                            return (
+                                scoreB - scoreA
+                            );
+                        }
+                        const terpA =
+                            getTotalTerpene(a);
+                        const terpB =
+                            getTotalTerpene(b);
+                        if (
+                            Math.abs(
+                                terpB - terpA
+                            ) > 0.0001
+                        ) {
+                            return (
+                                terpB - terpA
+                            );
+                        }
+                        return (
+                            getProductPrice(a) -
+                            getProductPrice(b)
+                        );
+                    }
+                );
+            }
+            /* ========================================================
+               VALUE SORT
+            ======================================================== */
+            else if (
+                sortMode === "value-best"
+            ) {
+                filtered.sort(
+                    (a, b) => {
+                        const terpA =
+                            getTotalTerpene(a);
+                        const terpB =
+                            getTotalTerpene(b);
+                        if (
+                            Math.abs(
+                                terpB - terpA
+                            ) > 0.0001
+                        ) {
+                            return (
+                                terpB - terpA
+                            );
+                        }
+                        return (
+                            getProductPrice(a) -
+                            getProductPrice(b)
+                        );
+                    }
+                );
+            }
+            /* ========================================================
+               TARGETED TERPENE SORT
+            ======================================================== */
+            else if (
+                sortMode === "targeted-best"
+            ) {
+                filtered.sort(
+                    (a, b) => {
+                        const valueA =
+                            terpeneValue !== "all"
+                                ? getSpecificTerpeneVal(
+                                    a,
+                                    terpeneValue
+                                )
+                                : getTotalTerpene(a);
+                        const valueB =
+                            terpeneValue !== "all"
+                                ? getSpecificTerpeneVal(
+                                    b,
+                                    terpeneValue
+                                )
+                                : getTotalTerpene(b);
+                        if (
+                            Math.abs(
+                                valueB - valueA
+                            ) > 0.0001
+                        ) {
+                            return (
+                                valueB - valueA
+                            );
+                        }
+                        return (
+                            getProductPrice(a) -
+                            getProductPrice(b)
+                        );
+                    }
+                );
+            }
+            renderGrid(filtered);
+        }
+        /* ========================================================
+           COLOR SELECTION
+        ======================================================== */
+        function handleSingleCircleClick(
+            event,
+            originalIndex
+        ) {
+            event.stopPropagation();
+            const currentColor =
+                userSelections[
+                originalIndex
+                ] || null;
+            if (
+                currentColor !== null
+            ) {
+                delete userSelections[
+                    originalIndex
+                ];
+            } else {
+                const usedColors =
+                    new Set(
+                        Object.values(
+                            userSelections
+                        )
+                    );
+                const availableColors =
+                    allColors.filter(
+                        color =>
+                            !usedColors.has(color)
+                    );
+                if (
+                    availableColors.length === 0
+                ) {
+                    alert(
+                        "All selection colors (Pink, Cyan, Lime) are currently in use. Please deselect one first."
+                    );
+                    return;
+                }
+                userSelections[
+                    originalIndex
+                ] =
+                    availableColors[0];
+            }
+            applyFilters();
+        }
+        /* ========================================================
+           PRODUCT IMAGE
+        ======================================================== */
+        function getProductImage(product) {
+            return (
+                product.images?.[0]?.url ||
+                product.images?.[0]?.src ||
+                product.image ||
+                product.image_url ||
+                product.thumbnail ||
+                ""
+            );
+        }
+        /* ========================================================
+           RENDER GRID
+        ======================================================== */
+        function renderGrid(products) {
+            const container =
+                document.getElementById(
+                    "productGrid"
+                );
+            const sortMode =
+                document.getElementById(
+                    "sortModeFilter"
+                ).value;
+            const terpeneValue =
+                document.getElementById(
+                    "terpeneFilter"
+                ).value;
+            if (
+                products.length === 0
+            ) {
+                container.innerHTML = `
+            <div style="
+                grid-column:1/-1;
+                text-align:center;
+                color:var(--muted);
+                padding:40px;
+            ">
+                No matching products found.
+            </div>
+        `;
+                return;
+            }
+            container.innerHTML =
+                products.map(product => {
+                    const originalIndex =
+                        loadedProducts.indexOf(
+                            product
+                        );
+                    const rawPrice =
+                        getProductPrice(
+                            product
+                        );
+                    const priceValue =
+                        rawPrice !== 9999
+                            ? `$${rawPrice.toFixed(2)}`
+                            : "—";
+                    const totalTerpene =
+                        getTotalTerpene(
+                            product
+                        );
+                    let badgeValue =
+                        totalTerpene;
+                    let labelDisplay =
+                        "";
+                    if (
+                        sortMode ===
+                        "targeted-best" &&
+                        terpeneValue !== "all"
+                    ) {
+                        badgeValue =
+                            getSpecificTerpeneVal(
+                                product,
+                                terpeneValue
+                            );
+                        labelDisplay = `
+                    <span class="card-terp-label-name">
+                        ${terpeneValue}
+                    </span>
+                `;
+                    }
+                    const imageUrl =
+                        getProductImage(
+                            product
+                        );
+                    const description =
+                        product.description
+                            ? product.description
+                                .replace(
+                                    /<[^>]*>/g,
+                                    ""
+                                )
+                            : "Jungle Boys Florida medical product profile.";
+                    const activeSpecial =
+                        product._activeSpecial;
+                    const selectedColor =
+                        userSelections[
+                        originalIndex
+                        ];
+                    const colorClass =
+                        selectedColor ||
+                        "";
+                    return `
+                <div
+                    class="product-card"
+                    onclick="openProductModal(${originalIndex})"
+                    onmouseenter="showHoverPreview(event, '${imageUrl}')"
+                    onmousemove="moveHoverPreview(event)"
+                    onmouseleave="hideHoverPreview()"
+                >
+                    <div class="card-selection-badge">
+                        <button
+                            class="select-circle ${colorClass}"
+                            title="Click to select or deselect color"
+                            onclick="handleSingleCircleClick(
+                                event,
+                                ${originalIndex}
+                            )"
+                        >
+                            ✓
+                        </button>
+                    </div>
+                    <div class="card-top">
+                        ${imageUrl
+                            ? `
+                                    <img
+                                        src="${imageUrl}"
+                                        alt=""
+                                    >
+                                `
+                            : `
+                                    <div style="
+                                        width:60px;
+                                        height:60px;
+                                        background:#ffffff;
+                                        border-radius:8px;
+                                    "></div>
+                                `
+                        }
+                        <div class="card-info">
+                            <div class="card-title">
+                                ${product.name ||
+                        product.title ||
+                        "Unnamed Product"
+                        }
+                            </div>
+                            <div class="card-desc">
+                                ${description}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer-row">
+                        <div class="card-price-area">
+                            <span class="card-price">
+                                ${priceValue}
+                            </span>
+                            ${activeSpecial
+                            ? `
+                                        <span class="card-sale-badge">
+                                            ${activeSpecial.type ||
+                            "SALE"
+                            }
+                                        </span>
+                                    `
+                            : ""
+                        }
+                        </div>
+                        <span class="card-terp-badge">
+                            ${labelDisplay}
+                            <span>
+                                ${badgeValue.toFixed(2)}%
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            `;
+                }).join("");
+        }
+        /* ========================================================
+           HOVER IMAGE PREVIEW
+        ======================================================== */
+        function showHoverPreview(
+            event,
+            imageUrl
+        ) {
+            if (
+                !imageUrl
+            ) {
+                return;
+            }
+            const tooltip =
+                document.getElementById(
+                    "hoverPreview"
+                );
+            const image =
+                document.getElementById(
+                    "hoverPreviewImg"
+                );
+            image.src =
+                imageUrl;
+            tooltip.style.display =
+                "flex";
+            updateTooltipPosition(
+                event
+            );
+        }
+        function moveHoverPreview(
+            event
+        ) {
+            updateTooltipPosition(
+                event
+            );
+        }
+        function updateTooltipPosition(
+            event
+        ) {
+            const tooltip =
+                document.getElementById(
+                    "hoverPreview"
+                );
+            const offset =
+                20;
+            let x =
+                event.clientX +
+                offset;
+            let y =
+                event.clientY +
+                offset;
+            if (
+                x + 240 >
+                window.innerWidth
+            ) {
+                x =
+                    event.clientX -
+                    240 -
+                    offset;
+            }
+            if (
+                y + 240 >
+                window.innerHeight
+            ) {
+                y =
+                    event.clientY -
+                    240 -
+                    offset;
+            }
+            tooltip.style.left =
+                `${x}px`;
+            tooltip.style.top =
+                `${y}px`;
+        }
+        function hideHoverPreview() {
+            document.getElementById(
+                "hoverPreview"
+            ).style.display =
+                "none";
+        }
+        /* ========================================================
+           PRODUCT MODAL
+        ======================================================== */
+        function openProductModal(
+            originalIndex
+        ) {
+            const product =
+                loadedProducts[
+                originalIndex
+                ];
+            if (
+                !product
+            ) {
+                console.error(
+                    "Product not found:",
+                    originalIndex
+                );
+                return;
+            }
+            const modalOverlay =
+                document.getElementById(
+                    "modalOverlay"
+                );
+            const modalBody =
+                document.getElementById(
+                    "modalBody"
+                );
+            const title =
+                product.name ||
+                product.title ||
+                "Unnamed Product";
+            const description =
+                product.description ||
+                product.short_description ||
+                "No description available.";
+            const imageUrl =
+                getProductImage(
+                    product
+                );
+            const strainType =
+                product.strain_type ||
+                product.strainType ||
+                product.species ||
+                "Hybrid";
+            const subcategory =
+                product.subcategory ||
+                product.sub_category ||
+                product.subCategory ||
+                "";
+            const price =
+                getProductPrice(
+                    product
+                );
+            const priceDisplay =
+                price !== 9999
+                    ? `$${price.toFixed(2)}`
+                    : "—";
+            const totalTerpene =
+                getTotalTerpene(
+                    product
+                );
+            /* ========================================================
+               SHOP URL
+            ======================================================== */
+            let shopUrl =
+                product.permalink ||
+                product.url ||
+                product.link ||
+                product.product_url;
+            if (
+                !shopUrl ||
+                typeof shopUrl !== "string" ||
+                !shopUrl.includes("http")
+            ) {
+                const slug =
+                    product.slug ||
+                    title
+                        .toLowerCase()
+                        .replace(
+                            /[^a-z0-9]+/g,
+                            "-"
+                        )
+                        .replace(
+                            /^-|-$/g,
+                            ""
+                        );
+                shopUrl =
+                    `https://jungleboysflorida.com/${retailer}/shop/${slug}/`;
+            }
+            /* ========================================================
+               TERPENE ROWS
+            ======================================================== */
+            let terpRowsHtml = `
+        <div class="terp-row">
+            <div class="terp-name-area">
+                <div class="terp-badge-icon">
+                    🌿
+                </div>
+                <span>
+                    Total Terpenes
+                </span>
+            </div>
+            <div class="terp-metric-area">
+                <span class="terp-pct">
+                    ${totalTerpene.toFixed(2)}%
+                </span>
+            </div>
+        </div>
+    `;
+            if (
+                Array.isArray(
+                    product.terpenes
+                ) &&
+                product.terpenes.length > 0
+            ) {
+                product.terpenes.forEach(
+                    terpene => {
+                        if (
+                            terpene.name &&
+                            terpene.name
+                                .toLowerCase()
+                                .includes("total")
+                        ) {
+                            return;
+                        }
+                        const name =
+                            terpene.name ||
+                            "Compound";
+                        const rawValue =
+                            terpene.value ??
+                            terpene.percentage ??
+                            terpene.amount ??
+                            terpene.val ??
+                            0;
+                        const numericValue =
+                            typeof rawValue === "number"
+                                ? rawValue
+                                : parseFloat(
+                                    rawValue
+                                ) || 0;
+                        const percentage =
+                            numericValue > 10
+                                ? numericValue / 100
+                                : numericValue;
+                        terpRowsHtml += `
+                    <div class="terp-row">
+                        <div class="terp-name-area">
+                            <div class="terp-badge-icon">
+                                🌿
+                            </div>
+                            <span>
+                                ${name}
+                            </span>
+                        </div>
+                        <div class="terp-metric-area">
+                            <span class="terp-pct">
+                                ${percentage.toFixed(2)}%
+                            </span>
+                        </div>
+                    </div>
+                `;
+                    }
+                );
+            } else {
+                terpRowsHtml += `
+            <div style="
+                color:var(--muted);
+                font-size:0.85rem;
+                text-align:center;
+                padding:12px;
+            ">
+                No individual terpene breakdown listed for this item.
+            </div>
+        `;
+            }
+            /* ========================================================
+               MODAL CONTENT
+            ======================================================== */
+            modalBody.innerHTML = `
+        <div class="modal-header-info">
+            <div class="modal-title">
+                ${title}
+            </div>
+            <div>
+                <span class="modal-sub">
+                    ${strainType}
+                    ${subcategory
+                    ? ` • ${subcategory}`
+                    : ""
+                }
+                    • Total Terpenes:
+                    ${totalTerpene.toFixed(2)}%
+                    ${price !== 9999
+                    ? ` • ${priceDisplay}`
+                    : ""
+                }
+                </span>
+            </div>
+        </div>
+        ${product._activeSpecial
+                    ? `
+                    <div class="modal-special-banner">
+                        <span>
+                            🔥
+                        </span>
+                        <span>
+                            ${product
+                        ._activeSpecial
+                        .name ||
+                    "Special Offer Active"
+                    }
+                        </span>
+                    </div>
+                `
+                    : ""
+                }
+        <div class="image-container">
+            <div class="large-image-wrapper">
+                <img
+                    src="${imageUrl}"
+                    alt="${title}"
+                >
+            </div>
+        </div>
+        <div style="
+            font-size:0.85rem;
+            color:var(--muted);
+            line-height:1.4;
+        ">
+            ${description}
+        </div>
+        <div class="terpene-list-box">
+            ${terpRowsHtml}
+        </div>
+        <div class="shop-row">
+            <a
+                class="shop-btn"
+                href="${shopUrl}"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                View Lab Report &amp; Shop
+            </a>
+        </div>
+    `;
+            modalOverlay.classList.add(
+                "active"
+            );
+        }
+        /* ========================================================
+           CLOSE MODAL
+        ======================================================== */
+        function closeModal() {
+            document
+                .getElementById(
+                    "modalOverlay"
+                )
+                .classList.remove(
+                    "active"
+                );
+        }
+        function handleModalClick(
+            event
+        ) {
+            if (
+                event.target.id ===
+                "modalOverlay"
+            ) {
+                closeModal();
+            }
+        }
+        /* ========================================================
+           START
+        ======================================================== */
+        init();
+    </script>
 </body>
 </html>
