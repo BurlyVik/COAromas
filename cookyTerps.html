@@ -147,11 +147,37 @@
             border-color: var(--accent);
             transform: translateY(-2px);
         }
+        
+        .card-selection-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 10;
+        }
+        .select-circle {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            background: var(--gray-circle);
+            color: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .select-circle.pink { background: var(--color-pink); color: #fff; }
+        .select-circle.cyan { background: var(--color-cyan); color: #000; }
+        .select-circle.lime { background: var(--color-lime); color: #000; }
+
         .card-top {
             display: flex;
             gap: 14px;
             align-items: flex-start;
-            padding-right: 10px;
+            padding-right: 40px;
         }
         .product-card img {
             width: 60px;
@@ -203,6 +229,18 @@
             font-weight: 700;
             font-size: 0.95rem;
             line-height: 1;
+        }
+        .card-sale-badge {
+            background: rgba(255, 51, 102, 0.15);
+            color: var(--sale-red);
+            border: 1px solid rgba(255, 51, 102, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: inline-block;
+            width: max-content;
+            margin-top: 2px;
         }
         .card-terp-badge {
             background: rgba(46, 160, 67, 0.15);
@@ -321,6 +359,18 @@
             border: 1px solid var(--border);
             display: inline-block;
             margin-top: 4px;
+        }
+        .modal-special-banner {
+            background: rgba(255, 51, 102, 0.12);
+            border: 1px solid rgba(255, 51, 102, 0.3);
+            color: var(--sale-red);
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .image-container {
             background: #ffffff;
@@ -463,16 +513,6 @@
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>Terpene Vibe Filter</label>
-                    <select id="vibeFilter" onchange="applyFilters()">
-                        <option value="all">All Vibes / Effects</option>
-                        <option value="relaxing">Deep Relaxation (Myrcene / Linalool)</option>
-                        <option value="uplifting">Uplifting & Energetic (Limonene / Pinene)</option>
-                        <option value="relief">Body Relief & Soothing (Caryophyllene / Humulene)</option>
-                        <option value="creative">Creative & Euphoric (Terpinolene / Ocimene)</option>
-                    </select>
-                </div>
-                <div class="filter-group">
                     <label>Specials / Deals</label>
                     <select id="specialFilter" onchange="applyFilters()">
                         <option value="all">All Items (Specials & Regular)</option>
@@ -526,6 +566,9 @@
         const categories = ["vapes", "concentrates", "pre-rolls", "premium-flower", "edibles"];
         let loadedProducts = [];
         let loadedSpecials = [];
+
+        const allColors = ["pink", "cyan", "lime"];
+        let userSelections = {}; 
 
         const terpeneDatabase = {
             "alpha pinene": "Aromatic profile: Sharp pine and rosemary. Medicinal uses: Enhances alertness, opens airways, and helps reduce inflammation and memory loss.",
@@ -703,7 +746,6 @@
             document.getElementById("subcatFilter").value = "all";
             document.getElementById("strainFilter").value = "all";
             document.getElementById("variantFilter").value = "all";
-            document.getElementById("vibeFilter").value = "all";
             document.getElementById("specialFilter").value = "all";
             document.getElementById("sortModeFilter").value = "default";
             document.getElementById("terpeneFilter").value = "all";
@@ -722,7 +764,6 @@
             return 9999;
         }
 
-        // UNTOUCHED TERPENE CALCULATION LOGIC
         function getTotalTerpene(p) {
             if (!Array.isArray(p.terpenes) || p.terpenes.length === 0) return 0;
             
@@ -775,117 +816,72 @@
             });
         }
 
-        function matchesVibe(p, vibeVal) {
-            if (vibeVal === "all") return true;
-            if (!Array.isArray(p.terpenes)) return false;
-
-            let targetTerpenes = [];
-            if (vibeVal === "relaxing") {
-                targetTerpenes = ["beta myrcene", "linalool"];
-            } else if (vibeVal === "uplifting") {
-                targetTerpenes = ["limonene", "alpha pinene", "beta pinene"];
-            } else if (vibeVal === "relief") {
-                targetTerpenes = ["beta caryophyllene", "humulene", "caryophyllene oxide"];
-            } else if (vibeVal === "creative") {
-                targetTerpenes = ["terpinolene", "ocimene"];
-            }
-
-            let vibeScore = 0;
-            let otherScore = 0;
-
-            p.terpenes.forEach(t => {
-                if (!t.name || t.name.toLowerCase().includes("total")) return;
-                const val = t.value ?? t.percentage ?? t.amount ?? t.val;
-                const numVal = typeof val === "number" ? val : parseFloat(val) || 0;
-                const nameLower = t.name.trim().toLowerCase();
-
-                if (targetTerpenes.includes(nameLower)) {
-                    vibeScore += numVal;
-                } else {
-                    otherScore += numVal;
-                }
-            });
-
-            return vibeScore > 0 && vibeScore >= (otherScore * 0.35);
+        function matchesSpecialFilter(p, filterVal) {
+            if (filterVal === "all") return true;
+            const hasSale = p._activeSpecial || p.sale || p.special || p.discount || (p.variants && p.variants.some(v => v.sale_price));
+            if (filterVal === "on-sale") return hasSale;
+            if (filterVal === "none") return !hasSale;
+            return true;
         }
 
         function applyFilters() {
-            const category = document.getElementById("categoryFilter").value;
+            const cat = document.getElementById("categoryFilter").value;
             const subcat = document.getElementById("subcatFilter").value;
             const strain = document.getElementById("strainFilter").value;
             const variant = document.getElementById("variantFilter").value;
-            const vibe = document.getElementById("vibeFilter").value;
             const special = document.getElementById("specialFilter").value;
             const sortMode = document.getElementById("sortModeFilter").value;
-            const terpFilter = document.getElementById("terpeneFilter").value;
+            const terpene = document.getElementById("terpeneFilter").value;
 
             let filtered = loadedProducts.filter(p => {
-                if (category !== "all" && p._assignedCategory !== category) return false;
+                if (cat !== "all" && p._assignedCategory !== cat) return false;
                 if (!matchesSubcategory(p, subcat)) return false;
                 if (!matchesStrainType(p, strain)) return false;
                 if (!matchesVariantOption(p, variant)) return false;
-                if (!matchesVibe(p, vibe)) return false;
-
-                if (special === "on-sale") {
-                    const hasSale = p.sale || p.special || (p.variants && p.variants.some(v => v.sale_price));
-                    if (!hasSale) return false;
-                } else if (special === "none") {
-                    const hasSale = p.sale || p.special || (p.variants && p.variants.some(v => v.sale_price));
-                    if (hasSale) return false;
-                }
-
-                if (terpFilter !== "all") {
-                    const val = getSpecificTerpeneVal(p, terpFilter);
-                    if (val <= 0) return false;
-                }
-
+                if (!matchesSpecialFilter(p, special)) return false;
                 return true;
             });
 
             if (sortMode === "value-best") {
                 filtered.sort((a, b) => {
-                    const terpA = getTotalTerpene(a);
-                    const terpB = getTotalTerpene(b);
-                    const priceA = getProductPrice(a);
-                    const priceB = getProductPrice(b);
-                    return (terpB / (priceB || 1)) - (terpA / (priceA || 1));
+                    const scoreA = getTotalTerpene(a) / (getProductPrice(a) || 1);
+                    const scoreB = getTotalTerpene(b) / (getProductPrice(b) || 1);
+                    return scoreB - scoreA;
                 });
-            } else if (sortMode === "targeted-best" && terpFilter !== "all") {
+            } else if (sortMode === "targeted-best" && terpene !== "all") {
                 filtered.sort((a, b) => {
-                    const valA = getSpecificTerpeneVal(a, terpFilter);
-                    const valB = getSpecificTerpeneVal(b, terpFilter);
-                    const priceA = getProductPrice(a);
-                    const priceB = getProductPrice(b);
-                    return (valB / (priceB || 1)) - (valA / (priceA || 1));
+                    const scoreA = getSpecificTerpeneVal(a, terpene) / (getProductPrice(a) || 1);
+                    const scoreB = getSpecificTerpeneVal(b, terpene) / (getProductPrice(b) || 1);
+                    return scoreB - scoreA;
                 });
             }
 
-            renderProducts(filtered);
+            renderGrid(filtered);
         }
 
-        function renderProducts(products) {
+        function renderGrid(products) {
             const grid = document.getElementById("productGrid");
             grid.innerHTML = "";
 
             if (products.length === 0) {
-                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 40px;">No products match your filter criteria.</div>`;
+                grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 40px;">No items match your active filters.</div>`;
                 return;
             }
 
-            products.forEach((p) => {
+            products.forEach(p => {
                 const card = document.createElement("div");
                 card.className = "product-card";
 
-                const title = p.name || p.title || "Unknown Product";
-                const desc = p.description || p.excerpt || "";
+                const imgUrl = p.image || p.image_url || (p.images && p.images[0]) || "";
+                const title = p.name || p.title || "Unnamed Product";
+                const desc = p.description || p.short_description || "";
                 const price = getProductPrice(p);
                 const priceStr = price < 9999 ? `$${price.toFixed(2)}` : "Price Varies";
-                const imgUrl = p.image || p.thumbnail || (p.images && p.images[0]) || "";
                 const totalTerp = getTotalTerpene(p);
 
                 card.innerHTML = `
                     <div class="card-top">
-                        ${imgUrl ? `<img src="${imgUrl}" alt="${title}">` : ""}
+                        ${imgUrl ? `<img src="${imgUrl}" alt="${title}">` : `<div style="width:60px;height:60px;background:#fff;border-radius:8px;"></div>`}
                         <div class="card-info">
                             <div class="card-title">${title}</div>
                             <div class="card-desc">${desc}</div>
@@ -894,98 +890,16 @@
                     <div class="card-footer-row">
                         <div class="card-price-area">
                             <div class="card-price">${priceStr}</div>
+                            ${p._activeSpecial ? `<div class="card-sale-badge">${p._activeSpecial.name || "On Sale"}</div>` : ""}
                         </div>
                         <div class="card-terp-badge">
-                            <span>${totalTerp > 0 ? totalTerp.toFixed(2) + '%' : 'N/A'}</span>
-                            <span class="card-terp-label-name">Terpenes</span>
+                            ${totalTerp > 0 ? `${totalTerp.toFixed(2)}%` : "N/A"} <span class="card-terp-label-name">Terp</span>
                         </div>
                     </div>
                 `;
 
-                if (imgUrl) {
-                    const cardImg = card.querySelector("img");
-                    cardImg.addEventListener("mouseenter", (e) => {
-                        const tooltip = document.getElementById("hoverPreview");
-                        const tipImg = document.getElementById("hoverPreviewImg");
-                        tipImg.src = imgUrl;
-                        tooltip.style.display = "flex";
-                        tooltip.style.left = (e.clientX + 15) + "px";
-                        tooltip.style.top = (e.clientY - 120) + "px";
-                    });
-                    cardImg.addEventListener("mousemove", (e) => {
-                        const tooltip = document.getElementById("hoverPreview");
-                        tooltip.style.left = (e.clientX + 15) + "px";
-                        tooltip.style.top = (e.clientY - 120) + "px";
-                    });
-                    cardImg.addEventListener("mouseleave", () => {
-                        document.getElementById("hoverPreview").style.display = "none";
-                    });
-                }
-
-                card.addEventListener("click", () => openModal(p));
                 grid.appendChild(card);
             });
-        }
-
-        function openModal(p) {
-            const modalOverlay = document.getElementById("modalOverlay");
-            const modalBody = document.getElementById("modalBody");
-            
-            const title = p.name || p.title || "Unknown Product";
-            const subcat = p.subcategory || p.sub_category || p.subCategory || "";
-            const strain = p.strain_type || p.strainType || p.species || "";
-            const desc = p.description || p.excerpt || "No description provided.";
-            const imgUrl = p.image || p.thumbnail || (p.images && p.images[0]) || "";
-            const shopUrl = p.url || p.link || `https://cookiesflorida.co/shop`;
-
-            let terpenesHtml = "";
-            if (Array.isArray(p.terpenes) && p.terpenes.length > 0) {
-                terpenesHtml = p.terpenes.map(t => {
-                    const name = t.name || "Terpene";
-                    const val = t.value ?? t.percentage ?? t.amount ?? t.val ?? 0;
-                    const numVal = typeof val === "number" ? val : parseFloat(val) || 0;
-                    return `
-                        <div class="terp-row">
-                            <div class="terp-name-area">
-                                <div class="terp-badge-icon">🌿</div>
-                                <span>${name}</span>
-                            </div>
-                            <div class="terp-metric-area">
-                                <span class="terp-pct">${numVal.toFixed(2)}%</span>
-                            </div>
-                        </div>
-                    `;
-                }).join("");
-            } else {
-                terpenesHtml = `<div style="text-align: center; color: var(--muted); font-size: 0.85rem; padding: 10px;">No detailed terpene profile listed.</div>`;
-            }
-
-            modalBody.innerHTML = `
-                <div class="modal-header-info">
-                    <div class="modal-title">${title}</div>
-                    <div>
-                        ${subcat ? `<span class="modal-sub">${subcat}</span>` : ""}
-                        ${strain ? `<span class="modal-sub" style="margin-left: 6px;">${strain}</span>` : ""}
-                    </div>
-                </div>
-                ${imgUrl ? `
-                    <div class="image-container">
-                        <div class="large-image-wrapper">
-                            <img src="${imgUrl}" alt="${title}">
-                        </div>
-                    </div>
-                ` : ""}
-                <div style="font-size: 0.85rem; color: var(--muted); line-height: 1.4;">${desc}</div>
-                <div style="font-size: 0.85rem; font-weight: 700; margin-top: 4px;">Terpene Breakdown</div>
-                <div class="terpene-list-box">
-                    ${terpenesHtml}
-                </div>
-                <div class="shop-row">
-                    <a href="${shopUrl}" target="_blank" class="shop-btn">View on Cookies FL</a>
-                </div>
-            `;
-
-            modalOverlay.classList.add("active");
         }
 
         function closeModal() {
@@ -998,7 +912,7 @@
             }
         }
 
-        init();
+        window.onload = init;
     </script>
 </body>
 </html>
