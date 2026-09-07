@@ -1006,82 +1006,74 @@
             tooltip.style.display = "none";
         }
 
-        function openProductModal(index) {
-            hideHoverPreview();
-            const p = loadedProducts[index];
+        function openProductModal(p) {
             const modalOverlay = document.getElementById("modalOverlay");
             const modalBody = document.getElementById("modalBody");
-
-            let priceVal = "—";
-            const rawPrice = getProductPrice(p);
-            if (rawPrice !== 9999) priceVal = `$${rawPrice.toFixed(2)}`;
-
-            const imgSrc = p.images?.[0]?.url || "";
-            const linkUrl = p.permalink || p.link || "#";
-            const activeSpecial = p._activeSpecial;
             
-            let terpenes = (p.terpenes || []).map(t => ({
-                name: t.name,
-                value: typeof t.value === "number" ? t.value : parseFloat(t.value) || 0
-            })).sort((a, b) => b.value - a.value);
+            const title = p.name || p.title || "Unnamed Product";
+            const desc = p.description || p.short_description || "No description available.";
+            const imgUrl = getProductImage(p);
+            const strainType = p.strain_type || p.strainType || p.species || "Hybrid";
+            const subcat = p.subcategory || p.sub_category || p.subCategory || "";
+            
+            // Explicitly check all possible API URL fields to prevent generic redirects
+            let shopUrl = p.permalink || p.url || p.link || p.product_url;
+            
+            if (!shopUrl || typeof shopUrl !== 'string' || !shopUrl.includes('http')) {
+                let shopSlug = p.slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                shopUrl = `https://cookiesflorida.co/${retailer}/shop/${shopSlug}/`;
+            }
 
-            let totalTerpSum = getTotalTerpene(p);
-
-            let terpeneHtml = "";
-            if (terpenes.length > 0) {
-                const icons = ["🌿", "🍋", "🌲", "🍦", "🔥", "🌸", "🪵"];
-                terpeneHtml = terpenes.map((t, i) => {
-                    return `
+            let terpRowsHtml = "";
+            if (Array.isArray(p.terpenes) && p.terpenes.length > 0) {
+                p.terpenes.forEach(t => {
+                    if (t.name && t.name.toLowerCase().includes("total")) return;
+                    const tName = t.name || "Compound";
+                    const val = t.value ?? t.percentage ?? t.amount ?? t.val ?? 0;
+                    const numVal = typeof val === "number" ? val : parseFloat(val) || 0;
+                    const pctStr = (numVal > 10 ? numVal / 100 : numVal).toFixed(2);
+                    
+                    terpRowsHtml += `
                         <div class="terp-row">
                             <div class="terp-name-area">
-                                <div class="terp-badge-icon">${icons[i % icons.length]}</div>
-                               <span>${t.name}</span>
+                                <div class="terp-badge-icon">🌿</div>
+                                <span>${tName}</span>
                             </div>
                             <div class="terp-metric-area">
-                                <span class="terp-mg">${(t.value * 10).toFixed(2)} mg/g</span>
-                                <span class="terp-pct">${t.value.toFixed(1)}%</span>
+                                <span class="terp-pct">${pctStr}%</span>
                             </div>
                         </div>
                     `;
-                }).join('');
+                });
             } else {
-                terpeneHtml = `
-                    <div class="terp-row">
-                        <div class="terp-name-area"><div class="terp-badge-icon">🍋</div><span>Limonene</span></div>
-                        <div class="terp-metric-area"><span class="terp-mg">11.90 mg/g</span><span class="terp-pct">1.8%</span></div>
-                    </div>
-                `;
+                terpRowsHtml = `<div style="color: var(--muted); font-size: 0.85rem; text-align: center; padding: 12px;">No individual terpene breakdown listed for this item.</div>`;
             }
 
             modalBody.innerHTML = `
                 <div class="modal-header-info">
-                    <div class="modal-title">${p.name || 'Product Profile'}</div>
+                    <div class="modal-title">${title}</div>
                     <div>
-                        <div class="modal-sub">Cookies ${formattedRetailerName} &bull; ${priceVal} &bull; Total Terpenes: ${totalTerpSum.toFixed(2)}%</div>
+                        <span class="modal-sub">${strainType} ${subcat ? '• ' + subcat : ''}</span>
                     </div>
                 </div>
-
-                ${activeSpecial ? `
+                ${p._activeSpecial ? `
                     <div class="modal-special-banner">
-                        🔥 <span><strong>${activeSpecial.type || 'SALE'}:</strong> ${activeSpecial.name}</span>
+                        <span>🔥</span>
+                        <span>${p._activeSpecial.name || "Special Offer Active"}</span>
                     </div>
                 ` : ''}
-
                 <div class="image-container">
                     <div class="large-image-wrapper">
-                        ${imgSrc ? `<img src="${imgSrc}" alt="${p.name || ''}">` : '<div style="color:var(--muted)">No Image Available</div>'}
+                        <img src="${imgUrl}" alt="${title}">
                     </div>
                 </div>
-
+                <div style="font-size: 0.85rem; color: var(--muted); line-height: 1.4;">${desc}</div>
                 <div class="terpene-list-box">
-                    ${terpeneHtml}
+                    ${terpRowsHtml}
                 </div>
-
-                ${linkUrl !== "#" ? `
-                    <div class="shop-row">
-                        <a class="shop-btn" href="${linkUrl}" target="_blank">View Lab Report & Shop</a>
-                    </div>
-                ` : ''}
+                <div class="shop-row">
+                    <a class="shop-btn" href="${shopUrl}" target="_blank">View Lab Report &amp; Shop</a>
+                </div>
             `;
 
             modalOverlay.classList.add("active");
