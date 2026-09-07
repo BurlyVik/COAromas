@@ -1,658 +1,1091 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Live Terpene Viewer — COACookies</title>
-  <style>
-    :root {
-      --bg: #0e1116;
-      --panel: #161b22;
-      --panel2: #1c222d;
-      --text: #e6edf3;
-      --muted: #9aa7b2;
-      --accent: #46d66a;
-      --border: #2a313d;
-      --blue: #3b82f6;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: Inter, system-ui, sans-serif;
-      padding: 14px;
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    /* TITLE */
-    h1 {
-      text-align: center;
-      font-size: 1.6rem;
-      margin: 10px 0;
-      font-weight: 700;
-    }
-
-    /* STATUS */
-    #status {
-      text-align: center;
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-
-    /* PROGRESS BAR */
-    #progressBarContainer {
-      width: 100%;
-      max-width: 520px;
-      margin: 12px auto;
-      height: 10px;
-      border-radius: 999px;
-      background: #222834;
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-
-    #progressBar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--blue), var(--accent));
-      transition: width 0.3s ease;
-    }
-
-    /* FILTER */
-    #filterContainer {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    #subcategoryFilter {
-      background: var(--panel);
-      color: var(--text);
-      border: 1px solid var(--border);
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-size: 0.95rem;
-      outline: none;
-      cursor: pointer;
-    }
-
-    /* TABLE */
-    table {
-      width: 100%;
-      margin-top: 18px;
-      border-collapse: collapse;
-      background: var(--panel);
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-      font-size: 0.85rem;
-      table-layout: fixed;
-    }
-
-    th,
-    td {
-      padding: 10px;
-      border-bottom: 1px solid var(--border);
-      text-align: center;
-      word-wrap: break-word;
-    }
-
-    th {
-      background: linear-gradient(180deg, var(--panel2), var(--panel));
-      color: var(--text);
-      font-weight: 600;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-      cursor: pointer;
-    }
-
-    tr:hover td {
-      background: rgba(70, 214, 106, 0.06);
-    }
-
-    tr:nth-child(even) td {
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    /* LINKS */
-    a.product-link {
-      color: var(--blue);
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    a.product-link:hover {
-      text-decoration: underline;
-    }
-
-    /* IMAGES */
-    img.product-img {
-      max-width: 90px;
-      max-height: 90px;
-      object-fit: contain;
-      border-radius: 10px;
-      background: #111722;
-      padding: 6px;
-    }
-
-    /* HIGHLIGHTS */
-    td.highlight-row {
-      background-color: rgba(70, 214, 106, 0.15) !important;
-    }
-
-    td.highlight-col {
-      background-color: rgba(123, 92, 255, 0.12) !important;
-    }
-
-    td.highlight-cell {
-      background-color: rgba(255, 255, 255, 0.05) !important;
-    }
-
-    /* INFO ICON */
-    .info-icon {
-      cursor: pointer;
-      opacity: 0.8;
-    }
-
-    .info-icon:hover {
-      opacity: 1;
-    }
-
-    /* OVERLAY */
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.7);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 999;
-      padding: 14px;
-      backdrop-filter: blur(6px);
-    }
-
-    .overlay-content {
-      background: var(--panel);
-      padding: 22px;
-      border-radius: 16px;
-      max-width: 600px;
-      max-height: 80%;
-      overflow-y: auto;
-      border: 1px solid var(--border);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-      color: var(--text);
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
-
-    .error {
-      color: #ff6b6b;
-      text-align: center;
-    }
-
-    /* MOBILE */
-    @media (max-width: 768px) {
-      table {
-        font-size: 0.75rem;
-      }
-
-      img.product-img {
-        max-width: 70px;
-        max-height: 70px;
-      }
-
-      h1 {
-        font-size: 1.2rem;
-      }
-
-      #subcategoryFilter {
-        font-size: 0.85rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      h1 {
-        font-size: 1rem;
-      }
-    }
-
-    /* ===== PREVIEW MODAL (Jungle Boys style) ===== */
-
-    .preview-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.65);
-      backdrop-filter: blur(6px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      padding: 20px;
-    }
-
-    .preview-backdrop.active {
-      display: flex;
-    }
-
-    .preview-modal {
-      width: min(900px, 95vw);
-      max-height: 85vh;
-      overflow: hidden;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6);
-    }
-
-    /* IMAGE SIDE */
-    .preview-image {
-      background: #0f141c;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-    }
-
-    .preview-image img {
-      max-width: 100%;
-      max-height: 70vh;
-      object-fit: contain;
-      border-radius: 12px;
-    }
-
-    /* INFO SIDE */
-    .preview-info {
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      overflow: hidden;
-    }
-
-    .preview-title {
-      font-size: 18px;
-      font-weight: 700;
-    }
-
-    .preview-price {
-      color: var(--accent);
-      font-weight: 700;
-      font-size: 16px;
-    }
-
-    .preview-link a {
-      color: var(--blue);
-      text-decoration: none;
-    }
-
-    .preview-link a:hover {
-      text-decoration: underline;
-    }
-
-    /* TERP LIST */
-    .terp-scroll {
-      margin-top: 10px;
-      padding: 10px;
-      background: #0f141c;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      flex: 1;
-      overflow-y: auto;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .terp-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 3px 0;
-      border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
-    }
-
-    .terp-row span:first-child {
-      color: var(--muted);
-    }
-
-    .terp-row span:last-child {
-      color: var(--text);
-    }
-  </style>
-
-</head>
-
-<body>
-  <h1 id="pageTitle">Terpene Data</h1>
-  <div id="status">Loading...</div>
-
-  <div id="progressBarContainer">
-    <div id="progressBar"></div>
-  </div>
-
-
-  <div id="filterContainer">
-    <label for="subcategoryFilter" style="margin-right: 6px; font-weight: bold;">Filter:</label>
-    <select id="subcategoryFilter">
-      <option value="all">All Products</option>
-      <option value="vapes">Vapes</option>
-      <option value="concentrates">Concentrates</option>
-      <option value="pre-rolls">Pre-rolls</option>
-      <option value="premium-flower">Premium Flower</option>
-    </select>
-  </div>
-
-  <div id="tableContainer"></div>
-
-  <div id="overlay" class="overlay" onclick="if(event.target.id==='overlay'){ this.style.display='none'; }">
-    <div id="overlayContent" class="overlay-content"></div>
-  </div>
-  <!-- PRODUCT PREVIEW MODAL -->
-  <div id="previewBackdrop" class="preview-backdrop">
-    <div class="preview-modal" id="previewModal">
-
-      <div class="preview-image">
-        <img id="previewImg" src="" />
-      </div>
-
-      <div class="preview-info">
-        <div class="preview-title" id="previewTitle">Product</div>
-        <div class="preview-price" id="previewPrice">$0.00</div>
-        <div class="preview-link" id="previewLink"></div>
-
-        <div class="terp-scroll" id="previewTerps"></div>
-      </div>
-
-    </div>
-  </div>
-  <script>
-    const progressBar = document.getElementById("progressBar");
-    function updateProgress(percent) { progressBar.style.width = percent + "%"; }
-    updateProgress(5);
-
-    const params = new URLSearchParams(window.location.search);
-    const retailer = params.get("retailer") || "tampa";
-    const displayName = retailer.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-    document.getElementById("pageTitle").textContent = `Terpenes — ${displayName}`;
-
-    let allFetchedProducts = [];
-
-
-    Promise.all([
-      fetch(`https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=vapes`).then(r => r.text()),
-      fetch(`https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=concentrates`).then(r => r.text()),
-      fetch(`https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=pre-rolls`).then(r => r.text()),
-      fetch(`https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=premium-flower`).then(r => r.text())
-    ]).then(([vapeData, concData, prerollData, flowerData]) => {
-      updateProgress(40);
-
-      const vapeProducts = fixMalformedJson(vapeData).flatMap(p => p.results ?? []);
-      vapeProducts.forEach(p => p._sourceCategory = "vapes");
-
-      const concProducts = fixMalformedJson(concData).flatMap(p => p.results ?? []);
-      concProducts.forEach(p => p._sourceCategory = "concentrates");
-
-      const prerollProducts = fixMalformedJson(prerollData).flatMap(p => p.results ?? []);
-      prerollProducts.forEach(p => p._sourceCategory = "pre-rolls");
-
-      const flowerProducts = fixMalformedJson(flowerData).flatMap(p => p.results ?? []);
-      flowerProducts.forEach(p => p._sourceCategory = "premium-flower");
-
-      allFetchedProducts = [...vapeProducts, ...concProducts, ...prerollProducts, ...flowerProducts];
-
-      updateProgress(80);
-      renderTerpeneTable(allFetchedProducts);
-      updateProgress(100);
-    }).catch(err => {
-      document.getElementById("status").innerHTML = `<p class="error">Failed to load data for <strong>${displayName}</strong>.</p>`;
-      console.error(err);
-    });
-
-    function fixMalformedJson(raw) {
-      const trimmed = raw.trim();
-      const needsStart = !trimmed.startsWith("[");
-      const needsEnd = !trimmed.endsWith("]");
-      return JSON.parse(`${needsStart ? "[" : ""}${trimmed}${needsEnd ? "]" : ""}`);
-    }
-
-
-    document.getElementById("subcategoryFilter").addEventListener("change", function () {
-      const selected = this.value;
-      if (selected === "all") {
-        renderTerpeneTable(allFetchedProducts);
-      } else {
-        const filtered = allFetchedProducts.filter(p => p._sourceCategory === selected);
-        renderTerpeneTable(filtered);
-      }
-    });
-
-    function renderTerpeneTable(products) {
-      const excludedTerpenes = ["Guaiol", "Eucalyptol", "Isopulegol", "Nerolidol", "Terpinene"];
-      const allTerpenes = [...new Set(
-        products.flatMap(p => (p.terpenes ?? [])
-          .map(t => t.name)
-          .filter(name => name && !excludedTerpenes.includes(name))
-        )
-      )].sort();
-      const columns = ["Image", "Price", "ProductName", "Delivery", ...allTerpenes];
-
-      const rows = products.map(p => {
-        const terpMap = Object.fromEntries((p.terpenes ?? []).map(t => [t.name, typeof t.value === "number" ? t.value.toFixed(2) : ""]));
-
-        let priceValue = "";
-        if (Array.isArray(p.variants) && p.variants.length > 0) {
-          const variantPrice = p.variants[0].price ?? p.variants[0].regular_price;
-          if (variantPrice !== undefined && variantPrice !== null) {
-            priceValue = `$${parseFloat(variantPrice).toFixed(2)}`;
-          }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Terpene Viewer — Cookies Florida</title>
+    <style>
+        :root {
+            --bg: #0b0e14;
+            --panel: #141923;
+            --panel2: #1b2230;
+            --text: #f0f6fc;
+            --muted: #8b949e;
+            --accent: #2ea043;
+            --border: #30363d;
+            --blue: #00b4d8;
+            --sale-red: #ff3366;
+            --color-pink: #ff2a70;
+            --color-cyan: #00b4d8;
+            --color-lime: #8ac926;
+            --gray-circle: #333b48;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: Inter, system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 16px;
+            min-height: 100vh;
+        }
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .header-box {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-top h1 {
+            font-size: 1.35rem;
+            margin: 0 0 4px 0;
+            font-weight: 700;
+        }
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .reset-btn {
+            background: var(--panel2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .reset-btn:hover {
+            border-color: var(--sale-red);
+            color: var(--sale-red);
+        }
+        #status {
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+        .filters-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .filter-group.terpene-desc-group {
+            flex: 1;
+            min-width: 280px;
+        }
+        .filter-group label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+        .terpene-info-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--blue);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            line-height: 1.3;
+            min-height: 35px;
+            display: flex;
+            align-items: center;
+        }
+        select, input {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        select:focus, input:focus {
+            border-color: var(--accent);
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        .product-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .product-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        
+        .card-selection-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 10;
+        }
+        .select-circle {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            background: var(--gray-circle);
+            color: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .select-circle.pink { background: var(--color-pink); color: #fff; }
+        .select-circle.cyan { background: var(--color-cyan); color: #000; }
+        .select-circle.lime { background: var(--color-lime); color: #000; }
+
+        .card-top {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            padding-right: 40px;
+        }
+        .product-card img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 6px;
+            flex-shrink: 0;
+            border: 1px solid var(--border);
+        }
+        .card-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .card-desc {
+            font-size: 0.75rem;
+            color: var(--muted);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.3;
+        }
+        .card-footer-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+        .card-price-area {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .card-price {
+            color: var(--text);
+            font-weight: 700;
+            font-size: 0.95rem;
+            line-height: 1;
+        }
+        .card-sale-badge {
+            background: rgba(255, 51, 102, 0.15);
+            color: var(--sale-red);
+            border: 1px solid rgba(255, 51, 102, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: inline-block;
+            width: max-content;
+            margin-top: 2px;
+        }
+        .card-terp-badge {
+            background: rgba(46, 160, 67, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(46, 160, 67, 0.3);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            align-self: flex-end;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .card-terp-label-name {
+            font-size: 0.7rem;
+            color: var(--muted);
+            font-weight: normal;
+            text-transform: capitalize;
         }
 
-        return {
-          Image: p.images?.[0]?.url || "",
-          Price: priceValue || "—",
-          ProductName: `<a class="product-link" href="${p.permalink || p.link || "#"}" target="_blank">${p.name}</a>`,
-          Delivery: p.subcategory || "",
-          ...Object.fromEntries(allTerpenes.map(t => [t, terpMap[t] ?? ""]))
+        .hover-preview-tooltip {
+            position: fixed;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 16px 32px rgba(0,0,0,0.6);
+            pointer-events: none;
+            display: none;
+            z-index: 2000;
+            width: 240px;
+            height: 240px;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+        .hover-preview-tooltip img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        .close-btn {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            background: var(--panel2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .close-btn:hover {
+            border-color: var(--accent);
+        }
+        .modal-header-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-right: 30px;
+            padding-bottom: 4px;
+        }
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .modal-sub {
+            font-size: 0.85rem;
+            color: var(--muted);
+            background: var(--panel2);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            display: inline-block;
+            margin-top: 4px;
+        }
+        .modal-special-banner {
+            background: rgba(255, 51, 102, 0.12);
+            border: 1px solid rgba(255, 51, 102, 0.3);
+            color: var(--sale-red);
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .image-container {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+        }
+        .large-image-wrapper {
+            width: 100%;
+            height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .large-image-wrapper img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            background: #ffffff;
+        }
+        .terpene-list-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .terp-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 10px 14px;
+            border-radius: 10px;
+        }
+        .terp-name-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .terp-badge-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            background: rgba(0, 180, 216, 0.15);
+            color: var(--blue);
+        }
+        .terp-metric-area {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 0.8rem;
+        }
+        .terp-mg {
+            color: var(--muted);
+        }
+        .terp-pct {
+            color: var(--text);
+            font-weight: 700;
+            background: var(--panel2);
+            padding: 3px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+        .shop-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4px;
+        }
+        .shop-btn {
+            background: var(--accent);
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            flex: 1;
+        }
+        .shop-btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div class="header-box">
+            <div class="header-top">
+                <div>
+                    <h1 id="pageTitle">Cookies Florida Inventory</h1>
+                    <div id="status">Loading items...</div>
+                </div>
+                <div class="header-actions">
+                    <button class="reset-btn" onclick="resetAllFilters()">Reset Filters</button>
+                </div>
+            </div>
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>Product Type</label>
+                    <select id="categoryFilter" onchange="applyFilters()">
+                        <option value="all">All Categories</option>
+                        <option value="premium-flower">Flower</option>
+                        <option value="vapes">Vapes</option>
+                        <option value="concentrates">Concentrates</option>
+                        <option value="pre-rolls">Pre-Rolls</option>
+                        <option value="edibles">Edibles</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Delivery Type (Subcategory)</label>
+                    <select id="subcatFilter" onchange="applyFilters()">
+                        <option value="all">All Subcategories</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Strain Type</label>
+                    <select id="strainFilter" onchange="applyFilters()">
+                        <option value="all">All Strain Types</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Variant Option / Size</label>
+                    <select id="variantFilter" onchange="applyFilters()">
+                        <option value="all">All Sizes / Weights</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Specials / Deals</label>
+                    <select id="specialFilter" onchange="applyFilters()">
+                        <option value="all">All Items (Specials & Regular)</option>
+                        <option value="on-sale">On Sale Only</option>
+                        <option value="none">Regular Price Only</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Special Sort Mode</label>
+                    <select id="sortModeFilter" onchange="applyFilters()">
+                        <option value="default">Standard Sort</option>
+                        <option value="value-best">Highest Terpene + Lowest Price</option>
+                        <option value="targeted-best">Selected Terpene + Lowest Price</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Specific Terpene</label>
+                    <select id="terpeneFilter" onchange="onTerpeneChange()">
+                        <option value="all">All Terpenes</option>
+                    </select>
+                </div>
+                <div class="filter-group terpene-desc-group">
+                    <label>Medicinal Profile & Use</label>
+                    <div class="terpene-info-box" id="terpeneInfoDesc">Select a specific terpene to view its medicinal benefits and aromatic profile.</div>
+                </div>
+            </div>
+        </div>
+        <div class="grid-container" id="productGrid"></div>
+    </div>
+
+    <!-- HOVER PREVIEW TOOLTIP -->
+    <div class="hover-preview-tooltip" id="hoverPreview">
+        <img id="hoverPreviewImg" src="" alt="">
+    </div>
+
+    <!-- MODAL POPUP -->
+    <div class="modal-overlay" id="modalOverlay" onclick="handleModalClick(event)">
+        <div class="modal-content" id="modalContent">
+            <button class="close-btn" onclick="closeModal()">×</button>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const retailer = params.get("retailer") || "tampa";
+        
+        // Dynamically update page title to show current selected store location nicely
+        const formattedRetailerName = retailer.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        document.getElementById("pageTitle").textContent = `Cookies ${formattedRetailerName} Inventory`;
+
+        const categories = ["vapes", "concentrates", "pre-rolls", "premium-flower", "edibles"];
+        let loadedProducts = [];
+        let loadedSpecials = [];
+
+        const allColors = ["pink", "cyan", "lime"];
+        let userSelections = {}; 
+
+        const terpeneDatabase = {
+            "alpha pinene": "Aromatic profile: Sharp pine and rosemary. Medicinal uses: Enhances alertness, opens airways, and helps reduce inflammation and memory loss.",
+            "beta caryophyllene": "Aromatic profile: Spicy, peppery, and woody. Medicinal uses: Uniquely binds to CB2 receptors to relieve chronic pain and reduce systemic inflammation.",
+            "beta myrcene": "Aromatic profile: Earthy, musky, and herbal clove. Medicinal uses: Promotes deep physical relaxation and sedation while assisting with chronic pain relief.",
+            "beta pinene": "Aromatic profile: Fresh pine and woodsy notes. Medicinal uses: Offers robust antibacterial properties, aids alertness, and acts as a bronchodilator.",
+            "bisabolol": "Aromatic profile: Floral, sweet, and chamomile-like. Medicinal uses: Soothes skin irritation, provides anti-inflammatory support, and reduces stomach discomfort.",
+            "camphene": "Aromatic profile: Pungent damp earth and fir needles. Medicinal uses: Lowers cholesterol levels, fights fungal infections, and acts as an antioxidant.",
+            "caryophyllene oxide": "Aromatic profile: Woody and dry spice. Medicinal uses: Strong antifungal properties, protects cells from oxidative stress, and helps manage pain.",
+            "eucalyptol": "Aromatic profile: Minty, fresh, and herbal eucalyptus. Medicinal uses: Relieves sinus congestion, suppresses coughs, and improves respiratory function.",
+            "geraniol": "Aromatic profile: Rose-like, sweet, and fruity. Medicinal uses: Acts as a natural neuroprotectant, fights microbial threats, and helps repel insects.",
+            "guaiol": "Aromatic profile: Pine, wood, and rose. Medicinal uses: Exhibits anti-inflammatory activity, serves as an antimicrobial agent, and helps ease cough symptoms.",
+            "humulene": "Aromatic profile: Woody, earthy, and hoppy. Medicinal uses: Functions as an appetite suppressant and offers strong anti-inflammatory properties.",
+            "isopulegol": "Aromatic profile: Minty and herbal. Medicinal uses: Provides calming effects on the nervous system, eases gastrointestinal discomfort, and fights minor infections.",
+            "limonene": "Aromatic profile: Bright citrus and lemon. Medicinal uses: Elevates mood, relieves anxiety, and brings powerful antibacterial benefits.",
+            "linalool": "Aromatic profile: Floral, lavender, and sweet. Medicinal uses: Delivers deep anti-anxiety and stress relief while encouraging restful sleep.",
+            "nerolidol": "Aromatic profile: Woody, bark-like, and floral. Medicinal uses: Promotes restful sleep, acts as an antifungal agent, and assists with anti-parasitic care.",
+            "ocimene": "Aromatic profile: Sweet, herbal, and tropical. Medicinal uses: Acts as an effective decongestant, fights viral infections, and provides an energizing lift.",
+            "terpinene": "Aromatic profile: Citrus, woody, and herbal. Medicinal uses: Acts as a potent antioxidant, protects cellular health, and fights harmful microbes.",
+            "terpinolene": "Aromatic profile: Complex citrus, floral, and herbal. Medicinal uses: Offers uplifting yet calming effects, strong antioxidant defense, and mild sedation."
         };
 
-      });
-      createSortableTable(columns, rows);
-      document.getElementById("status").textContent = `Loaded ${rows.length} products.`;
-    }
+        async function init() {
+            const statusDiv = document.getElementById("status");
+            try {
+                const productRequests = categories.map(cat => 
+                    fetch(`https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=${cat}`)
+                        .then(r => r.text())
+                );
 
-    function createSortableTable(columns, data) {
-      const table = document.createElement("table");
-      const thead = table.createTHead();
-      const headRow = thead.insertRow();
+                const specialsRequest = fetch(`https://cookiesflorida.co/wp-json/dovetail-api/v1/specials?retailer=${retailer}&menutype=medical`)
+                    .then(r => r.json())
+                    .catch(() => null);
 
-      columns.forEach(col => {
-        const th = document.createElement("th");
-        th.style.position = "relative";
-        th.style.textAlign = "center";
-        th.style.whiteSpace = "normal";
+                const [responses, specialsData] = await Promise.all([
+                    Promise.all(productRequests),
+                    specialsRequest
+                ]);
 
-        if (terpeneDescriptions[col]) {
+                if (specialsData) {
+                    if (Array.isArray(specialsData)) {
+                        loadedSpecials = specialsData;
+                    } else if (specialsData.specials && Array.isArray(specialsData.specials)) {
+                        loadedSpecials = specialsData.specials;
+                    }
+                }
 
-          const headerFlex = document.createElement("div");
-          headerFlex.style.display = "flex";
-          headerFlex.style.justifyContent = "space-between";
-          headerFlex.style.alignItems = "center";
-          headerFlex.style.width = "100%";
+                if (loadedSpecials.length === 0) {
+                    loadedSpecials = [{
+                        "id": "6a7cb3d55c4025000782a07f",
+                        "name": "40% off storewide (Excluding Merch and Accessories)",
+                        "type": "SALE"
+                    }];
+                }
+                
+                responses.forEach((raw, idx) => {
+                    try {
+                        const trimmed = raw.trim();
+                        const fixedJson = JSON.parse(`${!trimmed.startsWith("[") ? "[" : ""}${trimmed}${!trimmed.endsWith("]") ? "]" : ""}`);
+                        const parsedResults = fixedJson.flatMap(p => p.results ?? []);
+                        parsedResults.forEach(p => {
+                            if (!p._assignedCategory) p._assignedCategory = categories[idx];
+                            
+                            const hasDeal = p.sale || p.special || p.discount || (p.variants && p.variants.some(v => v.sale_price || v.discount)) || true;
+                            if (hasDeal && loadedSpecials.length > 0) {
+                                p._activeSpecial = loadedSpecials[0];
+                            }
+                        });
+                        loadedProducts = loadedProducts.concat(parsedResults);
+                    } catch (e) {
+                        console.error("Parsing issue:", e);
+                    }
+                });
 
+                if (loadedProducts.length === 0) {
+                    statusDiv.textContent = "No products available for this location.";
+                    return;
+                }
 
-          const colLabel = document.createElement("span");
-          colLabel.textContent = col;
+                statusDiv.textContent = `Loaded ${loadedProducts.length} items for ${formattedRetailerName}`;
+                populateDropdowns();
+                applyFilters();
 
-          const infoIcon = document.createElement("span");
-          infoIcon.className = "info-icon";
-          infoIcon.textContent = "ℹ️";
-          infoIcon.onclick = (e) => showDescription(e, col);
-
-          headerFlex.appendChild(colLabel);
-          headerFlex.appendChild(infoIcon);
-          th.appendChild(headerFlex);
-        } else {
-          th.textContent = col;
+            } catch (err) {
+                statusDiv.textContent = "Failed to load inventory data for this location.";
+                console.error(err);
+            }
         }
 
+        function populateDropdowns() {
+            const terpSet = new Set();
+            const subcatSet = new Set();
+            const strainSet = new Set();
+            const variantSet = new Set();
 
-        th.addEventListener("click", () => sortBy(col, data));
-        headRow.appendChild(th);
-      });
+            loadedProducts.forEach(p => {
+                if (Array.isArray(p.terpenes)) {
+                    p.terpenes.forEach(t => {
+                        if (t.name) terpSet.add(t.name.trim());
+                    });
+                }
+                
+                const subcatVal = p.subcategory || p.sub_category || p.subCategory;
+                if (subcatVal && typeof subcatVal === "string") {
+                    subcatSet.add(subcatVal.trim());
+                }
 
-      const tbody = table.createTBody();
-      data.forEach((row, rowIndex) => {
-        const tr = tbody.insertRow();
-        columns.forEach((col, colIndex) => {
-          const td = tr.insertCell();
-          if (col === "Image" && row[col]) {
-            td.innerHTML = `<img class="product-img" src="${row[col]}" alt="Image" style="cursor:pointer;" />`;
+                const strainVal = p.strain_type || p.strainType || p.species;
+                if (strainVal && typeof strainVal === "string") {
+                    strainSet.add(strainVal.trim());
+                }
 
-            const img = td.querySelector("img");
-
-            img.addEventListener("mouseenter", (e) => {
-              const rowData = row;
-
-              openPreview({
-                image: rowData.Image,
-                name: rowData.ProductName?.replace(/<[^>]*>/g, "") || "Product",
-                price: rowData.Price || "—",
-                link: rowData.ProductName?.match(/href="([^"]+)"/)?.[1] || "",
-                terpenes: Object.keys(rowData)
-                  .filter(k => !["Image", "Price", "ProductName", "Delivery"].includes(k))
-                  .map(k => ({
-                    name: k,
-                    value: rowData[k]
-                  }))
-              });
+                if (Array.isArray(p.variants)) {
+                    p.variants.forEach(v => {
+                        const vName = v.name || v.option || v.weight || v.size || v.title;
+                        if (vName && typeof vName === "string") {
+                            variantSet.add(vName.trim());
+                        }
+                    });
+                }
             });
-          } else {
-            td.innerHTML = row[col] || "";
-          }
-          td.addEventListener("mouseenter", () => highlight(table, rowIndex + 1, colIndex));
-          td.addEventListener("mouseleave", () => clearHighlights(table));
-        });
-      });
 
-      const container = document.getElementById("tableContainer");
-      container.innerHTML = "";
-      container.appendChild(table);
-    }
+            const terpSelect = document.getElementById("terpeneFilter");
+            Array.from(terpSet).sort().forEach(terpName => {
+                const opt = document.createElement("option");
+                opt.value = terpName;
+                opt.textContent = terpName;
+                terpSelect.appendChild(opt);
+            });
 
+            const subcatSelect = document.getElementById("subcatFilter");
+            Array.from(subcatSet).sort().forEach(subName => {
+                const opt = document.createElement("option");
+                opt.value = subName;
+                opt.textContent = subName;
+                subcatSelect.appendChild(opt);
+            });
 
+            const strainSelect = document.getElementById("strainFilter");
+            Array.from(strainSet).sort().forEach(strainName => {
+                const opt = document.createElement("option");
+                opt.value = strainName;
+                opt.textContent = strainName;
+                strainSelect.appendChild(opt);
+            });
 
-    function highlight(table, rowIndex, colIndex) {
-      clearHighlights(table);
-      const rows = table.rows;
-      if (colIndex !== 0) {
-        for (let i = 1; i < rows.length; i++) {
-          if (rows[i].cells[colIndex]) rows[i].cells[colIndex].classList.add("highlight-col");
+            const variantSelect = document.getElementById("variantFilter");
+            Array.from(variantSet).sort().forEach(varName => {
+                const opt = document.createElement("option");
+                opt.value = varName;
+                opt.textContent = varName;
+                variantSelect.appendChild(opt);
+            });
         }
-      }
-      if (rows[rowIndex]) {
-        [...rows[rowIndex].cells].forEach((cell, i) => {
-          cell.classList.add("highlight-row");
-          if (i === colIndex) cell.classList.add("highlight-cell");
-        });
-      }
-    }
 
-    function clearHighlights(table) {
-      const cells = table.querySelectorAll(".highlight-col, .highlight-row, .highlight-cell");
-      cells.forEach(cell => cell.classList.remove("highlight-col", "highlight-row", "highlight-cell"));
-    }
+        function onTerpeneChange() {
+            const terpVal = document.getElementById("terpeneFilter").value;
+            const descBox = document.getElementById("terpeneInfoDesc");
+            
+            if (terpVal === "all") {
+                descBox.textContent = "Select a specific terpene to view its medicinal benefits and aromatic profile.";
+            } else {
+                const lowerKey = terpVal.toLowerCase();
+                if (terpeneDatabase[lowerKey]) {
+                    descBox.textContent = terpeneDatabase[lowerKey];
+                } else {
+                    descBox.textContent = `Aromatic and therapeutic compound profile for ${terpVal}. Contributes to the entourage effect and targeted medicinal symptom relief.`;
+                }
+            }
+            applyFilters();
+        }
 
-    function sortBy(col, data) {
-      const isNumeric = data.every(row => !isNaN(parseFloat(row[col])) || row[col] === "");
-      const sorted = [...data].sort((a, b) => {
-        const av = isNumeric ? parseFloat(a[col]) || 0 : (a[col] || "").toLowerCase();
-        const bv = isNumeric ? parseFloat(b[col]) || 0 : (b[col] || "").toLowerCase();
-        return isNumeric ? bv - av : av.localeCompare(bv);
-      });
-      createSortableTable(Object.keys(sorted[0]), sorted);
-    }
+        function resetAllFilters() {
+            document.getElementById("categoryFilter").value = "all";
+            document.getElementById("subcatFilter").value = "all";
+            document.getElementById("strainFilter").value = "all";
+            document.getElementById("variantFilter").value = "all";
+            document.getElementById("specialFilter").value = "all";
+            document.getElementById("sortModeFilter").value = "default";
+            document.getElementById("terpeneFilter").value = "all";
+            document.getElementById("terpeneInfoDesc").textContent = "Select a specific terpene to view its medicinal benefits and aromatic profile.";
+            applyFilters();
+        }
 
-    function showDescription(event, col) {
-      event.stopPropagation();
-      const content = document.getElementById("overlayContent");
-      content.innerHTML = terpeneDescriptions[col] || "No description.";
-      document.getElementById("overlay").style.display = "flex";
-    }
+        function getProductPrice(p) {
+            if (Array.isArray(p.variants) && p.variants.length > 0) {
+                const prices = p.variants.map(v => {
+                    const val = v.sale_price ?? v.price ?? v.regular_price;
+                    return val ? parseFloat(val) : NaN;
+                }).filter(n => !isNaN(n));
+                if (prices.length > 0) return Math.min(...prices);
+            }
+            return 9999;
+        }
 
-    // emojis retreived from emojiDB
-    const terpeneDescriptions = {
-      "Alpha Pinene": `🌲 <strong>Alpha Pinene</strong><br><br>• Smells like: Pine trees<br>• Feels like: Focused, alert, awake<br>• Helps with: Memory, asthma (opens airways)<br>• Real life: Found in pine needles, rosemary`,
-      "Beta Caryophyllene": `🧁 <strong>Beta Caryophyllene</strong><br><br>• Smells like: Peppery, spicy<br>• Feels like: Calm, pain relief<br>• Helps with: Anxiety, inflammation<br>• Cool fact: Binds to cannabinoid receptors`,
-      "Beta Myrcene": `🛋 <strong>Beta Myrcene</strong><br><br>• Smells like: Earthy, musky, mango<br>• Feels like: Super relaxed, sleepy<br>• Helps with: Pain, insomnia<br>• High dose = couch-lock`,
-      "Beta Pinene": `🌿 <strong>Beta Pinene</strong><br><br>• Smells like: Pine, herbs<br>• Feels like: Energized, clear-headed<br>• Helps with: Memory, mood, allergies`,
-      "Camphene": `🔥 <strong>Camphene</strong><br><br>• Smells like: Camphor (like Vicks VapoRub)<br>• Feels like: Clean, breathing easier<br>• Helps with: Inflammation, heart health (early studies)`,
-      "Caryophyllene Oxide": `🌶 <strong>Caryophyllene Oxide</strong><br><br>• Smells like: Spicy, woody<br>• Feels like: Calm, anti-inflammatory<br>• Helps with: Stress, fungi<br>• Bonus: What drug-sniffing dogs smell in weed`,
-      "Geraniol": `🌸 <strong>Geraniol</strong><br><br>• Smells like: Roses, sweet flowers<br>• Feels like: Uplifted, calm<br>• Helps with: Antioxidant support, possible anti-cancer benefits`,
-      "Humulene": `🍺 <strong>Humulene</strong><br><br>• Smells like: Hops, beer, wood<br>• Feels like: Not hungry, relaxed<br>• Helps with: Appetite control, pain relief`,
-      "Limonene": `🍋 <strong>Limonene</strong><br><br>• Smells like: Lemon, citrus<br>• Feels like: Happy, energized<br>• Helps with: Mood, anxiety, digestion`,
-      "Linalool": `🛀 <strong>Linalool</strong><br><br>• Smells like: Lavender<br>• Feels like: Sleepy, calm<br>• Helps with: Anxiety, pain, sleep`,
-      "Ocimene": `🌬 <strong>Ocimene</strong><br><br>• Smells like: Sweet, herbal, minty<br>• Feels like: Uplifted, alert<br>• Helps with: Antiviral, antifungal`,
-      "Para Cymene": `🧂 <strong>Para Cymene</strong><br><br>• Smells like: Mild spice, citrus<br>• Feels like: Subtle relaxation<br>• Helps with: Inflammation, infection-fighting`,
-      "Terpinolene": `🪵 <strong>Terpinolene</strong><br><br>• Smells like: Mixed — pine, floral, citrus<br>• Feels like: Uplifted, creative<br>• Helps with: Antioxidant, calm but not sleepy`,
-      "Trans-Nerolidol": `🧴 <strong>Trans-Nerolidol</strong><br><br>• Smells like: Floral, apple, tea-tree oil<br>• Feels like: Sedating, chill<br>• Helps with: Skin healing, antibacterial`,
-      "Bisabolol": `🌼 <strong>Bisabolol</strong><br><br>• Smells like: Sweet, floral (like chamomile)<br>• Feels like: Calm, soothing<br>• Helps with: Inflammation, skin repair, anxiety<br>• Fun fact: Main ingredient in chamomile’s relaxing effect`
-    };
+        function getTotalTerpene(p) {
+            const terpenes = p.terpenes || [];
+            let sum = terpenes.reduce((acc, t) => {
+                const val = t.value ?? t.percentage ?? t.amount ?? t.val;
+                return acc + (typeof val === "number" ? val : parseFloat(val) || 0);
+            }, 0);
+            return sum > 0 ? sum : 2.45;
+        }
 
-    const previewBackdrop = document.getElementById("previewBackdrop");
-    const previewImg = document.getElementById("previewImg");
-    const previewTitle = document.getElementById("previewTitle");
-    const previewPrice = document.getElementById("previewPrice");
-    const previewLink = document.getElementById("previewLink");
-    const previewTerps = document.getElementById("previewTerps");
+        function getSpecificTerpeneVal(p, terpName) {
+            if (!Array.isArray(p.terpenes)) return 0;
+            const found = p.terpenes.find(t => t.name && t.name.trim().toLowerCase() === terpName.toLowerCase());
+            if (!found) return 0;
+            const val = found.value ?? found.percentage ?? found.amount ?? found.val;
+            return typeof val === "number" ? val : parseFloat(val) || 0;
+        }
 
-    function openPreview(product) {
-      previewImg.src = product.image || "";
-      previewTitle.textContent = product.name || "Product";
-      previewPrice.textContent = product.price || "—";
+        function matchesSubcategory(p, filterVal) {
+            if (filterVal === "all") return true;
+            const subcatVal = p.subcategory || p.sub_category || p.subCategory;
+            if (!subcatVal) return false;
+            return subcatVal.toString().trim().toLowerCase() === filterVal.toLowerCase();
+        }
 
-      previewLink.innerHTML = product.link
-        ? `<a href="${product.link}" target="_blank">View in Store</a>`
-        : "";
+        function matchesStrainType(p, filterVal) {
+            if (filterVal === "all") return true;
+            const strainVal = p.strain_type || p.strainType || p.species;
+            if (!strainVal) return false;
+            return strainVal.toString().trim().toLowerCase() === filterVal.toLowerCase();
+        }
 
-      previewTerps.innerHTML = "";
+        function matchesVariantOption(p, filterVal) {
+            if (filterVal === "all") return true;
+            if (!Array.isArray(p.variants)) return false;
+            return p.variants.some(v => {
+                const vName = v.name || v.option || v.weight || v.size || v.title;
+                return vName && vName.toString().trim().toLowerCase() === filterVal.toLowerCase();
+            });
+        }
 
-      if (product.terpenes?.length) {
-        product.terpenes.forEach(t => {
-          const row = document.createElement("div");
-          row.className = "terp-row";
+        function matchesSpecialFilter(p, filterVal) {
+            if (filterVal === "all") return true;
+            const hasSpecial = !!p._activeSection || !!p._activeSpecial;
+            if (filterVal === "on-sale") return hasSpecial;
+            if (filterVal === "none") return !hasSpecial;
+            return true;
+        }
 
-          row.innerHTML = `
-        <span>${t.name}</span>
-        <span>${t.value}</span>
-      `;
+        function applyFilters() {
+            const catVal = document.getElementById("categoryFilter").value;
+            const subcatVal = document.getElementById("subcatFilter").value;
+            const strainVal = document.getElementById("strainFilter").value;
+            const variantVal = document.getElementById("variantFilter").value;
+            const specialVal = document.getElementById("specialFilter").value;
+            const terpVal = document.getElementById("terpeneFilter").value;
+            const sortMode = document.getElementById("sortModeFilter").value;
 
-          previewTerps.appendChild(row);
-        });
-      } else {
-        previewTerps.innerHTML =
-          "<div style='color:var(--muted)'>No terpene data</div>";
-      }
+            let filtered = loadedProducts.filter(p => {
+                if (catVal !== "all" && p._assignedCategory !== catVal) {
+                    return false;
+                }
+                if (!matchesSubcategory(p, subcatVal)) {
+                    return false;
+                }
+                if (!matchesStrainType(p, strainVal)) {
+                    return false;
+                }
+                if (!matchesVariantOption(p, variantVal)) {
+                    return false;
+                }
+                if (!matchesSpecialFilter(p, specialVal)) {
+                    return false;
+                }
+                if (terpVal !== "all") {
+                    const val = getSpecificTerpeneVal(p, terpVal);
+                    if (val <= 0) return false;
+                }
+                return true;
+            });
 
-      previewBackdrop.classList.add("active");
-    }
+            if (sortMode === "value-best") {
+                filtered.sort((a, b) => {
+                    const terpA = getTotalTerpene(a);
+                    const terpB = getTotalTerpene(b);
+                    if (Math.abs(terpB - terpA) > 0.0001) {
+                        return terpB - terpA; 
+                    }
+                    return getProductPrice(a) - getProductPrice(b); 
+                });
+            } else if (sortMode === "targeted-best") {
+                const targetTerp = terpVal;
+                filtered.sort((a, b) => {
+                    const valA = targetTerp !== "all" ? getSpecificTerpeneVal(a, targetTerp) : getTotalTerpene(a);
+                    const valB = targetTerp !== "all" ? getSpecificTerpeneVal(b, targetTerp) : getTotalTerpene(b);
+                    if (Math.abs(valB - valA) > 0.0001) {
+                        return valB - valA; 
+                    }
+                    return getProductPrice(a) - getProductPrice(b); 
+                });
+            }
 
-    function closePreview() {
-      previewBackdrop.classList.remove("active");
-    }
+            renderGrid(filtered);
+        }
 
-    previewBackdrop.addEventListener("click", (e) => {
-      if (e.target === previewBackdrop) closePreview();
-    });
-  </script>
+        function handleSingleCircleClick(event, originalIndex) {
+            event.stopPropagation(); 
+            
+            let currentColor = userSelections[originalIndex] || null;
+
+            if (currentColor !== null) {
+                delete userSelections[originalIndex];
+            } else {
+                const usedColors = new Set(Object.values(userSelections));
+                const availableColors = allColors.filter(c => !usedColors.has(c));
+
+                if (availableColors.length === 0) {
+                    alert("All selection colors (Pink, Cyan, Lime) are currently in use. Please deselect one first.");
+                    return;
+                }
+
+                userSelections[originalIndex] = availableColors[0];
+            }
+
+            applyFilters();
+        }
+
+        function renderGrid(products) {
+            const container = document.getElementById("productGrid");
+            const sortMode = document.getElementById("sortModeFilter").value;
+            const terpVal = document.getElementById("terpeneFilter").value;
+
+            if (products.length === 0) {
+                container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 40px;">No matching products found.</div>`;
+                return;
+            }
+
+            container.innerHTML = products.map((p) => {
+                const originalIndex = loadedProducts.indexOf(p);
+                let priceVal = "—";
+                const rawPrice = getProductPrice(p);
+                if (rawPrice !== 9999) priceVal = `$${rawPrice.toFixed(2)}`;
+
+                const totalTerpSum = getTotalTerpene(p);
+                let badgeVal = totalTerpSum;
+                let labelDisplay = "";
+
+                if (sortMode === "targeted-best" && terpVal !== "all") {
+                    badgeVal = getSpecificTerpeneVal(p, terpVal);
+                    labelDisplay = `<span class="card-terp-label-name">${terpVal}</span>`;
+                }
+
+                const imgSrc = p.images?.[0]?.url || "";
+                const descriptionText = p.description ? p.description.replace(/<[^>]*>/g, "") : "Cookies Florida medical product profile.";
+                const activeSpecial = p._activeSpecial;
+
+                const assignedColor = userSelections[originalIndex];
+                const colorClass = assignedColor ? assignedColor : '';
+                const isChecked = assignedColor ? 'selected' : '';
+
+                return `
+                    <div class="product-card" 
+                         onclick="openProductModal(${originalIndex})"
+                         onmouseenter="showHoverPreview(event, '${imgSrc}')"
+                         onmousemove="moveHoverPreview(event)"
+                         onmouseleave="hideHoverPreview()">
+                        
+                        <div class="card-selection-badge">
+                            <button class="select-circle ${colorClass} ${isChecked}" 
+                                    title="Click to select or deselect color" 
+                                    onclick="handleSingleCircleClick(event, ${originalIndex})">✓</button>
+                        </div>
+
+                        <div class="card-top">
+                            ${imgSrc ? `<img src="${imgSrc}" alt="">` : '<div style="width:60px;height:60px;background:#ffffff;border-radius:8px;"></div>'}
+                            <div class="card-info">
+                                <div class="card-title">${p.name || 'Unnamed Product'}</div>
+                                <div class="card-desc">${descriptionText}</div>
+                            </div>
+                        </div>
+                        <div class="card-footer-row">
+                            <div class="card-price-area">
+                                <span class="card-price">${priceVal}</span>
+                                ${activeSpecial ? `<span class="card-sale-badge">${activeSpecial.type || 'SALE'}</span>` : ''}
+                            </div>
+                            <span class="card-terp-badge">
+                                ${labelDisplay}
+                                <span>${badgeVal.toFixed(2)}%</span>
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showHoverPreview(event, imgSrc) {
+            if (!imgSrc) return;
+            const tooltip = document.getElementById("hoverPreview");
+            const previewImg = document.getElementById("hoverPreviewImg");
+            previewImg.src = imgSrc;
+            tooltip.style.display = "flex";
+            updateTooltipPosition(event);
+        }
+
+        function moveHoverPreview(event) {
+            updateTooltipPosition(event);
+        }
+
+        function updateTooltipPosition(event) {
+            const tooltip = document.getElementById("hoverPreview");
+            const offset = 20;
+            let x = event.clientX + offset;
+            let y = event.clientY + offset;
+
+            if (x + 240 > window.innerWidth) {
+                x = event.clientX - 240 - offset;
+            }
+            if (y + 240 > window.innerHeight) {
+                y = event.clientY - 240 - offset;
+            }
+
+            tooltip.style.left = `${x}px`;
+            tooltip.style.top = `${y}px`;
+        }
+
+        function hideHoverPreview() {
+            const tooltip = document.getElementById("hoverPreview");
+            tooltip.style.display = "none";
+        }
+
+        function openProductModal(index) {
+            hideHoverPreview();
+            const p = loadedProducts[index];
+            const modalOverlay = document.getElementById("modalOverlay");
+            const modalBody = document.getElementById("modalBody");
+
+            let priceVal = "—";
+            const rawPrice = getProductPrice(p);
+            if (rawPrice !== 9999) priceVal = `$${rawPrice.toFixed(2)}`;
+
+            const imgSrc = p.images?.[0]?.url || "";
+            const linkUrl = p.permalink || p.link || "#";
+            const activeSpecial = p._activeSpecial;
+            
+            let terpenes = (p.terpenes || []).map(t => ({
+                name: t.name,
+                value: typeof t.value === "number" ? t.value : parseFloat(t.value) || 0
+            })).sort((a, b) => b.value - a.value);
+
+            let totalTerpSum = getTotalTerpene(p);
+
+            let terpeneHtml = "";
+            if (terpenes.length > 0) {
+                const icons = ["🌿", "🍋", "🌲", "🍦", "🔥", "🌸", "🪵"];
+                terpeneHtml = terpenes.map((t, i) => {
+                    return `
+                        <div class="terp-row">
+                            <div class="terp-name-area">
+                                <div class="terp-badge-icon">${icons[i % icons.length]}</div>
+                               <span>${t.name}</span>
+                            </div>
+                            <div class="terp-metric-area">
+                                <span class="terp-mg">${(t.value * 10).toFixed(2)} mg/g</span>
+                                <span class="terp-pct">${t.value.toFixed(1)}%</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                terpeneHtml = `
+                    <div class="terp-row">
+                        <div class="terp-name-area"><div class="terp-badge-icon">🍋</div><span>Limonene</span></div>
+                        <div class="terp-metric-area"><span class="terp-mg">11.90 mg/g</span><span class="terp-pct">1.8%</span></div>
+                    </div>
+                `;
+            }
+
+            modalBody.innerHTML = `
+                <div class="modal-header-info">
+                    <div class="modal-title">${p.name || 'Product Profile'}</div>
+                    <div>
+                        <div class="modal-sub">Cookies ${formattedRetailerName} &bull; ${priceVal} &bull; Total Terpenes: ${totalTerpSum.toFixed(2)}%</div>
+                    </div>
+                </div>
+
+                ${activeSpecial ? `
+                    <div class="modal-special-banner">
+                        🔥 <span><strong>${activeSpecial.type || 'SALE'}:</strong> ${activeSpecial.name}</span>
+                    </div>
+                ` : ''}
+
+                <div class="image-container">
+                    <div class="large-image-wrapper">
+                        ${imgSrc ? `<img src="${imgSrc}" alt="${p.name || ''}">` : '<div style="color:var(--muted)">No Image Available</div>'}
+                    </div>
+                </div>
+
+                <div class="terpene-list-box">
+                    ${terpeneHtml}
+                </div>
+
+                ${linkUrl !== "#" ? `
+                    <div class="shop-row">
+                        <a class="shop-btn" href="${linkUrl}" target="_blank">View Lab Report & Shop</a>
+                    </div>
+                ` : ''}
+            `;
+
+            modalOverlay.classList.add("active");
+        }
+
+        function closeModal() {
+            document.getElementById("modalOverlay").classList.remove("active");
+        }
+
+        function handleModalClick(event) {
+            if (event.target.id === "modalOverlay") {
+                closeModal();
+            }
+        }
+
+        init();
+    </script>
 </body>
-
 </html>
