@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +21,11 @@
             --color-lime: #8ac926;
             --gray-circle: #333b48;
         }
-        * { box-sizing: border-box; }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Inter, system-ui, sans-serif;
             background: var(--bg);
@@ -29,6 +34,7 @@
             padding: 16px;
             min-height: 100vh;
         }
+
         .main-container {
             max-width: 1400px;
             margin: 0 auto;
@@ -36,6 +42,7 @@
             flex-direction: column;
             gap: 16px;
         }
+
         .header-box {
             background: var(--panel);
             border: 1px solid var(--border);
@@ -45,21 +52,25 @@
             flex-direction: column;
             gap: 16px;
         }
+
         .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
+
         .header-top h1 {
             font-size: 1.35rem;
             margin: 0 0 4px 0;
             font-weight: 700;
         }
+
         .header-actions {
             display: flex;
             gap: 10px;
             align-items: center;
         }
+
         .reset-btn {
             background: var(--panel2);
             border: 1px solid var(--border);
@@ -71,14 +82,17 @@
             cursor: pointer;
             transition: all 0.2s;
         }
+
         .reset-btn:hover {
             border-color: var(--sale-red);
             color: var(--sale-red);
         }
+
         #status {
             color: var(--muted);
             font-size: 0.85rem;
         }
+
         .filters-row {
             display: flex;
             flex-wrap: wrap;
@@ -87,20 +101,24 @@
             padding-top: 12px;
             border-top: 1px solid var(--border);
         }
+
         .filter-group {
             display: flex;
             flex-direction: column;
             gap: 4px;
         }
+
         .filter-group.terpene-desc-group {
             flex: 1;
             min-width: 280px;
         }
+
         .filter-group label {
             font-size: 0.75rem;
             color: var(--muted);
             font-weight: 600;
         }
+
         .terpene-info-box {
             background: var(--bg);
             border: 1px solid var(--border);
@@ -113,7 +131,9 @@
             display: flex;
             align-items: center;
         }
-        select, input {
+
+        select,
+        input {
             background: var(--bg);
             border: 1px solid var(--border);
             color: var(--text);
@@ -123,14 +143,18 @@
             outline: none;
             transition: border-color 0.2s;
         }
-        select:focus, input:focus {
+
+        select:focus,
+        input:focus {
             border-color: var(--accent);
         }
+
         .grid-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 16px;
         }
+
         .product-card {
             background: var(--panel);
             border: 1px solid var(--border);
@@ -143,17 +167,19 @@
             transition: all 0.2s ease;
             position: relative;
         }
+
         .product-card:hover {
             border-color: var(--accent);
             transform: translateY(-2px);
         }
-        
+
         .card-selection-badge {
             position: absolute;
             top: 12px;
             right: 12px;
             z-index: 10;
         }
+
         .select-circle {
             width: 26px;
             height: 26px;
@@ -169,9 +195,21 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        .select-circle.pink { background: var(--color-pink); color: #fff; }
-        .select-circle.cyan { background: var(--color-cyan); color: #000; }
-        .select-circle.lime { background: var(--color-lime); color: #000; }
+
+        .select-circle.pink {
+            background: var(--color-pink);
+            color: #fff;
+        }
+
+        .select-circle.cyan {
+            background: var(--color-cyan);
+            color: #000;
+        }
+
+        .select-circle.lime {
+            background: var(--color-lime);
+            color: #000;
+        }
 
         .card-top {
             display: flex;
@@ -179,6 +217,7 @@
             align-items: flex-start;
             padding-right: 40px;
         }
+
         .product-card img {
             width: 60px;
             height: 60px;
@@ -189,10 +228,12 @@
             flex-shrink: 0;
             border: 1px solid var(--border);
         }
+
         .card-info {
             flex: 1;
             min-width: 0;
         }
+
         .card-title {
             font-size: 0.95rem;
             font-weight: 700;
@@ -202,6 +243,7 @@
             color: var(--text);
             margin-bottom: 4px;
         }
+
         .card-desc {
             font-size: 0.75rem;
             color: var(--muted);
@@ -211,6 +253,7 @@
             overflow: hidden;
             line-height: 1.3;
         }
+
         .card-footer-row {
             display: flex;
             justify-content: space-between;
@@ -219,17 +262,20 @@
             padding-top: 10px;
             border-top: 1px solid var(--border);
         }
+
         .card-price-area {
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
+
         .card-price {
             color: var(--text);
             font-weight: 700;
             font-size: 0.95rem;
             line-height: 1;
         }
+
         .card-sale-badge {
             background: rgba(255, 51, 102, 0.15);
             color: var(--sale-red);
@@ -242,6 +288,7 @@
             width: max-content;
             margin-top: 2px;
         }
+
         .card-terp-badge {
             background: rgba(46, 160, 67, 0.15);
             color: var(--accent);
@@ -255,6 +302,7 @@
             align-items: center;
             gap: 6px;
         }
+
         .card-terp-label-name {
             font-size: 0.7rem;
             color: var(--muted);
@@ -268,7 +316,7 @@
             border: 1px solid var(--border);
             border-radius: 14px;
             padding: 16px;
-            box-shadow: 0 16px 32px rgba(0,0,0,0.6);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.6);
             pointer-events: none;
             display: none;
             z-index: 2000;
@@ -278,6 +326,7 @@
             justify-content: center;
             backdrop-filter: blur(8px);
         }
+
         .hover-preview-tooltip img {
             max-width: 100%;
             max-height: 100%;
@@ -301,9 +350,11 @@
             z-index: 1000;
             backdrop-filter: blur(4px);
         }
+
         .modal-overlay.active {
             display: flex;
         }
+
         .modal-content {
             background: var(--panel);
             border: 1px solid var(--border);
@@ -317,8 +368,9 @@
             flex-direction: column;
             gap: 16px;
             position: relative;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
         }
+
         .close-btn {
             position: absolute;
             top: 18px;
@@ -335,9 +387,11 @@
             align-items: center;
             justify-content: center;
         }
+
         .close-btn:hover {
             border-color: var(--accent);
         }
+
         .modal-header-info {
             display: flex;
             flex-direction: column;
@@ -345,11 +399,13 @@
             padding-right: 30px;
             padding-bottom: 4px;
         }
+
         .modal-title {
             font-size: 1.1rem;
             font-weight: 700;
             margin-bottom: 2px;
         }
+
         .modal-sub {
             font-size: 0.85rem;
             color: var(--muted);
@@ -360,6 +416,7 @@
             display: inline-block;
             margin-top: 4px;
         }
+
         .modal-special-banner {
             background: rgba(255, 51, 102, 0.12);
             border: 1px solid rgba(255, 51, 102, 0.3);
@@ -372,6 +429,7 @@
             align-items: center;
             gap: 8px;
         }
+
         .image-container {
             background: #ffffff;
             border: 1px solid var(--border);
@@ -379,6 +437,7 @@
             padding: 20px;
             text-align: center;
         }
+
         .large-image-wrapper {
             width: 100%;
             height: 220px;
@@ -386,12 +445,14 @@
             align-items: center;
             justify-content: center;
         }
+
         .large-image-wrapper img {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
             background: #ffffff;
         }
+
         .terpene-list-box {
             background: var(--bg);
             border: 1px solid var(--border);
@@ -403,6 +464,7 @@
             max-height: 200px;
             overflow-y: auto;
         }
+
         .terp-row {
             display: flex;
             align-items: center;
@@ -412,6 +474,7 @@
             padding: 10px 14px;
             border-radius: 10px;
         }
+
         .terp-name-area {
             display: flex;
             align-items: center;
@@ -419,6 +482,7 @@
             font-size: 0.85rem;
             font-weight: 600;
         }
+
         .terp-badge-icon {
             width: 24px;
             height: 24px;
@@ -430,15 +494,18 @@
             background: rgba(0, 180, 216, 0.15);
             color: var(--blue);
         }
+
         .terp-metric-area {
             display: flex;
             align-items: center;
             gap: 14px;
             font-size: 0.8rem;
         }
+
         .terp-mg {
             color: var(--muted);
         }
+
         .terp-pct {
             color: var(--text);
             font-weight: 700;
@@ -447,12 +514,14 @@
             border-radius: 6px;
             border: 1px solid var(--border);
         }
+
         .shop-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-top: 4px;
         }
+
         .shop-btn {
             background: var(--accent);
             color: #fff;
@@ -464,11 +533,13 @@
             text-align: center;
             flex: 1;
         }
+
         .shop-btn:hover {
             opacity: 0.9;
         }
     </style>
 </head>
+
 <body>
 
     <div class="main-container">
@@ -521,6 +592,18 @@
                     </select>
                 </div>
                 <div class="filter-group">
+                    <label>Vibe / Gravity Effect (does not determine ranking)</label>
+                    <select id="vibeFilter" onchange="applyFilters()">
+                        <option value="all">All Vibes & Gravity Effects</option>
+                        <option value="couch-lock">Couch Lock (Heavy Body)</option>
+                        <option value="hypogravity">Hypogravity (Floating / Dreamy)</option>
+                        <option value="hypergravity">Hypergravity (Grounded & Rooted)</option>
+                        <option value="deep-sleep">Deep Sleep & Relaxation</option>
+                        <option value="pain-relief">Pain Relief</option>
+                        <option value="energetic">Energetic & Uplifted</option>
+                    </select>
+                </div>
+                <div class="filter-group">
                     <label>Special Sort Mode</label>
                     <select id="sortModeFilter" onchange="applyFilters()">
                         <option value="default">Standard Sort</option>
@@ -536,7 +619,8 @@
                 </div>
                 <div class="filter-group terpene-desc-group">
                     <label>Medicinal Profile & Use</label>
-                    <div class="terpene-info-box" id="terpeneInfoDesc">Select a specific terpene to view its medicinal benefits and aromatic profile.</div>
+                    <div class="terpene-info-box" id="terpeneInfoDesc">Select a specific terpene to view its medicinal
+                        benefits and aromatic profile.</div>
                 </div>
             </div>
         </div>
@@ -559,7 +643,7 @@
     <script>
         const params = new URLSearchParams(window.location.search);
         const retailer = params.get("retailer") || "tampa";
-        
+
         // Dynamically update page title to show current selected store location nicely
         const formattedRetailerName = retailer.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
         document.getElementById("pageTitle").textContent = `Cookies ${formattedRetailerName} Inventory`;
@@ -569,7 +653,7 @@
         let loadedSpecials = [];
 
         const allColors = ["pink", "cyan", "lime"];
-        let userSelections = {}; 
+        let userSelections = {};
 
         const terpeneDatabase = {
             "alpha pinene": "Aromatic profile: Sharp pine and rosemary. Medicinal uses: Enhances alertness, opens airways, and helps reduce inflammation and memory loss.",
@@ -592,10 +676,97 @@
             "terpinolene": "Aromatic profile: Complex citrus, floral, and herbal. Medicinal uses: Offers uplifting yet calming effects, strong antioxidant defense, and mild sedation."
         };
 
+        const vibeMappings = {
+
+            "couch-lock": [
+                "beta myrcene",
+                "beta caryophyllene",
+                "linalool"
+            ],
+
+            "hypogravity": [
+                "terpinolene",
+                "limonene",
+                "ocimene"
+            ],
+
+            "hypergravity": [
+                "beta caryophyllene",
+                "humulene",
+                "bisabolol"
+            ],
+
+            "deep-sleep": [
+                "beta myrcene",
+                "nerolidol",
+                "linalool"
+            ],
+
+            "pain-relief": [
+                "beta caryophyllene",
+                "guaiol",
+                "caryophyllene oxide"
+            ],
+
+            "energetic": [
+                "alpha pinene",
+                "beta pinene",
+                "limonene"
+            ]
+
+        };
+
+        function getVibeScore(p, vibeName) {
+
+            if (!vibeName || vibeName === "all") {
+                return 0;
+            }
+
+            const targetTerpenes = vibeMappings[vibeName];
+
+            if (!Array.isArray(targetTerpenes) || targetTerpenes.length === 0) {
+                return 0;
+            }
+
+            let score = 0;
+            let matchedTerpenes = 0;
+
+            targetTerpenes.forEach(terpName => {
+
+                const value = getSpecificTerpeneVal(p, terpName);
+
+                if (value > 0) {
+                    matchedTerpenes++;
+
+                    /*
+                     * Concentration is the primary ranking factor.
+                     * We also give a small bonus for having multiple
+                     * terpenes associated with the selected vibe.
+                     */
+                    score += value;
+                }
+            });
+
+            /*
+             * Small coverage bonus.
+             *
+             * A product containing several relevant terpenes gets
+             * prioritized over one containing only one relevant terpene
+             * when their total concentrations are otherwise similar.
+             */
+            if (matchedTerpenes > 1) {
+                score += matchedTerpenes * 0.25;
+            }
+
+            return score;
+        }
+
+
+
         async function init() {
             const statusDiv = document.getElementById("status");
             try {
-                const productRequests = categories.map(cat => 
+                const productRequests = categories.map(cat =>
                     fetch(`https://cookiesflorida.co/wp-json/dovetail-api/v1/products?page=1&perpage=100&orderby=popular&order=desc&retailer=${retailer}&menutype=medical&categories[]=${cat}`)
                         .then(r => r.text())
                 );
@@ -624,7 +795,7 @@
                         "type": "SALE"
                     }];
                 }
-                
+
                 responses.forEach((raw, idx) => {
                     try {
                         const trimmed = raw.trim();
@@ -632,7 +803,7 @@
                         const parsedResults = fixedJson.flatMap(p => p.results ?? []);
                         parsedResults.forEach(p => {
                             if (!p._assignedCategory) p._assignedCategory = categories[idx];
-                            
+
                             const hasDeal = p.sale || p.special || p.discount || (p.variants && p.variants.some(v => v.sale_price || v.discount)) || true;
                             if (hasDeal && loadedSpecials.length > 0) {
                                 p._activeSpecial = loadedSpecials[0];
@@ -671,7 +842,7 @@
                         if (t.name) terpSet.add(t.name.trim());
                     });
                 }
-                
+
                 const subcatVal = p.subcategory || p.sub_category || p.subCategory;
                 if (subcatVal && typeof subcatVal === "string") {
                     subcatSet.add(subcatVal.trim());
@@ -728,7 +899,7 @@
         function onTerpeneChange() {
             const terpVal = document.getElementById("terpeneFilter").value;
             const descBox = document.getElementById("terpeneInfoDesc");
-            
+
             if (terpVal === "all") {
                 descBox.textContent = "Select a specific terpene to view its medicinal benefits and aromatic profile.";
             } else {
@@ -743,6 +914,7 @@
         }
 
         function resetAllFilters() {
+
             document.getElementById("categoryFilter").value = "all";
             document.getElementById("subcatFilter").value = "all";
             document.getElementById("strainFilter").value = "all";
@@ -750,9 +922,14 @@
             document.getElementById("specialFilter").value = "all";
             document.getElementById("sortModeFilter").value = "default";
             document.getElementById("terpeneFilter").value = "all";
-            document.getElementById("terpeneInfoDesc").textContent = "Select a specific terpene to view its medicinal benefits and aromatic profile.";
+            document.getElementById("vibeFilter").value = "all";
+
+            document.getElementById("terpeneInfoDesc").textContent =
+                "Select a specific terpene to view its medicinal benefits and aromatic profile.";
+
             applyFilters();
         }
+
 
         function getProductPrice(p) {
             if (Array.isArray(p.variants) && p.variants.length > 0) {
@@ -767,22 +944,22 @@
 
         function getTotalTerpene(p) {
             if (!Array.isArray(p.terpenes) || p.terpenes.length === 0) return 0;
-            
-            const totalEntry = p.terpenes.find(t => 
+
+            const totalEntry = p.terpenes.find(t =>
                 t.name && t.name.toLowerCase().includes("total")
             );
-            
+
             if (totalEntry) {
                 const val = totalEntry.value ?? totalEntry.percentage ?? totalEntry.amount ?? totalEntry.val;
                 return typeof val === "number" ? val : parseFloat(val) || 0;
             }
-            
+
             let sum = p.terpenes.reduce((acc, t) => {
                 if (t.name && t.name.toLowerCase().includes("total")) return acc;
                 const val = t.value ?? t.percentage ?? t.amount ?? t.val;
                 return acc + (typeof val === "number" ? val : parseFloat(val) || 0);
             }, 0);
-            
+
             return sum > 0 ? sum : 0;
         }
 
@@ -832,6 +1009,7 @@
             const variantVal = document.getElementById("variantFilter").value;
             const specialVal = document.getElementById("specialFilter").value;
             const terpVal = document.getElementById("terpeneFilter").value;
+            const vibeVal = document.getElementById("vibeFilter").value;
             const sortMode = document.getElementById("sortModeFilter").value;
 
             let filtered = loadedProducts.filter(p => {
@@ -854,27 +1032,81 @@
                     const val = getSpecificTerpeneVal(p, terpVal);
                     if (val <= 0) return false;
                 }
+
+                if (vibeVal !== "all") {
+
+                    const vibeScore = getVibeScore(p, vibeVal);
+                    if (vibeScore <= 0) {
+                        return false;
+                    }
+                }
+
                 return true;
             });
 
-            if (sortMode === "value-best") {
+            if (vibeVal !== "all") {
+
                 filtered.sort((a, b) => {
+
+                    const vibeA = getVibeScore(a, vibeVal);
+                    const vibeB = getVibeScore(b, vibeVal);
+
+                    // Strongest vibe match first
+                    if (Math.abs(vibeB - vibeA) > 0.0001) {
+                        return vibeB - vibeA;
+                    }
+
+                    // If vibe scores are tied, use total terpene
+                    const totalA = getTotalTerpene(a);
+                    const totalB = getTotalTerpene(b);
+
+                    if (Math.abs(totalB - totalA) > 0.0001) {
+                        return totalB - totalA;
+                    }
+
+                    // Final tie-breaker = lower price
+                    return getProductPrice(a) - getProductPrice(b);
+                });
+
+            }
+
+            else if (sortMode === "value-best") {
+
+                filtered.sort((a, b) => {
+
                     const terpA = getTotalTerpene(a);
                     const terpB = getTotalTerpene(b);
+
                     if (Math.abs(terpB - terpA) > 0.0001) {
-                        return terpB - terpA; 
+                        return terpB - terpA;
                     }
-                    return getProductPrice(a) - getProductPrice(b); 
+
+                    return getProductPrice(a) - getProductPrice(b);
                 });
-            } else if (sortMode === "targeted-best") {
+
+            }
+
+            else if (sortMode === "targeted-best") {
+
                 const targetTerp = terpVal;
+
                 filtered.sort((a, b) => {
-                    const valA = targetTerp !== "all" ? getSpecificTerpeneVal(a, targetTerp) : getTotalTerpene(a);
-                    const valB = targetTerp !== "all" ? getSpecificTerpeneVal(b, targetTerp) : getTotalTerpene(b);
+
+                    const valA =
+                        targetTerp !== "all"
+                            ? getSpecificTerpeneVal(a, targetTerp)
+                            : getTotalTerpene(a);
+
+                    const valB =
+                        targetTerp !== "all"
+                            ? getSpecificTerpeneVal(b, targetTerp)
+                            : getTotalTerpene(b);
+
                     if (Math.abs(valB - valA) > 0.0001) {
-                        return valB - valA; 
+                        return valB - valA;
                     }
-                    return getProductPrice(a) - getProductPrice(b); 
+
+                    return getProductPrice(a) - getProductPrice(b);
                 });
             }
 
@@ -882,8 +1114,8 @@
         }
 
         function handleSingleCircleClick(event, originalIndex) {
-            event.stopPropagation(); 
-            
+            event.stopPropagation();
+
             let currentColor = userSelections[originalIndex] || null;
 
             if (currentColor !== null) {
@@ -915,9 +1147,13 @@
 
             container.innerHTML = products.map((p) => {
                 const originalIndex = loadedProducts.indexOf(p);
+
                 let priceVal = "—";
                 const rawPrice = getProductPrice(p);
-                if (rawPrice !== 9999) priceVal = `$${rawPrice.toFixed(2)}`;
+
+                if (rawPrice !== 9999) {
+                    priceVal = `$${rawPrice.toFixed(2)}`;
+                }
 
                 const totalTerpSum = getTotalTerpene(p);
                 let badgeVal = totalTerpSum;
@@ -929,7 +1165,10 @@
                 }
 
                 const imgSrc = p.images?.[0]?.url || "";
-                const descriptionText = p.description ? p.description.replace(/<[^>]*>/g, "") : "Cookies Florida medical product profile.";
+                const descriptionText = p.description
+                    ? p.description.replace(/<[^>]*>/g, "")
+                    : "Cookies Florida medical product profile.";
+
                 const activeSpecial = p._activeSpecial;
 
                 const assignedColor = userSelections[originalIndex];
@@ -937,37 +1176,46 @@
                 const isChecked = assignedColor ? 'selected' : '';
 
                 return `
-                    <div class="product-card" 
-                         onclick="openProductModal(${originalIndex})"
-                         onmouseenter="showHoverPreview(event, '${imgSrc}')"
-                         onmousemove="moveHoverPreview(event)"
-                         onmouseleave="hideHoverPreview()">
-                        
-                        <div class="card-selection-badge">
-                            <button class="select-circle ${colorClass} ${isChecked}" 
-                                    title="Click to select or deselect color" 
-                                    onclick="handleSingleCircleClick(event, ${originalIndex})">✓</button>
-                        </div>
+            <div class="product-card" 
+                 onclick="openProductModal(${originalIndex})"
+                 onmouseenter="showHoverPreview(event, '${imgSrc}')"
+                 onmousemove="moveHoverPreview(event)"
+                 onmouseleave="hideHoverPreview()">
 
-                        <div class="card-top">
-                            ${imgSrc ? `<img src="${imgSrc}" alt="">` : '<div style="width:60px;height:60px;background:#ffffff;border-radius:8px;"></div>'}
-                            <div class="card-info">
-                                <div class="card-title">${p.name || 'Unnamed Product'}</div>
-                                <div class="card-desc">${descriptionText}</div>
-                            </div>
-                        </div>
-                        <div class="card-footer-row">
-                            <div class="card-price-area">
-                                <span class="card-price">${priceVal}</span>
-                                ${activeSpecial ? `<span class="card-sale-badge">${activeSpecial.type || 'SALE'}</span>` : ''}
-                            </div>
-                            <span class="card-terp-badge">
-                                ${labelDisplay}
-                                <span>${badgeVal.toFixed(2)}%</span>
-                            </span>
-                        </div>
+                <div class="card-selection-badge">
+                    <button class="select-circle ${colorClass} ${isChecked}" 
+                            title="Click to select or deselect color" 
+                            onclick="handleSingleCircleClick(event, ${originalIndex})">✓</button>
+                </div>
+
+                <div class="card-top">
+                    ${imgSrc
+                        ? `<img src="${imgSrc}" alt="">`
+                        : '<div style="width:60px;height:60px;background:#ffffff;border-radius:8px;"></div>'
+                    }
+
+                    <div class="card-info">
+                        <div class="card-title">${p.name || 'Unnamed Product'}</div>
+                        <div class="card-desc">${descriptionText}</div>
                     </div>
-                `;
+                </div>
+
+                <div class="card-footer-row">
+                    <div class="card-price-area">
+                        <span class="card-price">${priceVal}</span>
+                        ${activeSpecial
+                        ? `<span class="card-sale-badge">${activeSpecial.type || 'SALE'}</span>`
+                        : ''
+                    }
+                    </div>
+
+                    <span class="card-terp-badge">
+                        ${labelDisplay}
+                        <span>${badgeVal.toFixed(2)}%</span>
+                    </span>
+                </div>
+            </div>
+        `;
             }).join('');
         }
 
@@ -1006,75 +1254,188 @@
             tooltip.style.display = "none";
         }
 
-        function openProductModal(p) {
+        function getProductImage(p) {
+            return p.images?.[0]?.url ||
+                p.images?.[0]?.src ||
+                p.image ||
+                p.image_url ||
+                p.thumbnail ||
+                "";
+        }
+
+
+        function openProductModal(originalIndex) {
+            const p = loadedProducts[originalIndex];
+
+            if (!p) {
+                console.error("Product not found:", originalIndex);
+                return;
+            }
+
             const modalOverlay = document.getElementById("modalOverlay");
             const modalBody = document.getElementById("modalBody");
-            
+
             const title = p.name || p.title || "Unnamed Product";
             const desc = p.description || p.short_description || "No description available.";
             const imgUrl = getProductImage(p);
             const strainType = p.strain_type || p.strainType || p.species || "Hybrid";
             const subcat = p.subcategory || p.sub_category || p.subCategory || "";
-            
-            // Explicitly check all possible API URL fields to prevent generic redirects
+
+            // ---------------------------------------------------------
+            // TOTAL TERPENES
+            // ---------------------------------------------------------
+            const totalTerpene = getTotalTerpene(p);
+            const totalTerpeneDisplay = `${totalTerpene.toFixed(2)}%`;
+
+            // ---------------------------------------------------------
+            // SHOP URL
+            // ---------------------------------------------------------
             let shopUrl = p.permalink || p.url || p.link || p.product_url;
-            
-            if (!shopUrl || typeof shopUrl !== 'string' || !shopUrl.includes('http')) {
-                let shopSlug = p.slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+            if (!shopUrl || typeof shopUrl !== "string" || !shopUrl.includes("http")) {
+                let shopSlug =
+                    p.slug ||
+                    title
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, "-")
+                        .replace(/^-|-$/g, "");
+
                 shopUrl = `https://cookiesflorida.co/${retailer}/shop/${shopSlug}/`;
             }
 
+            // ---------------------------------------------------------
+            // TERPENE ROWS
+            // ---------------------------------------------------------
             let terpRowsHtml = "";
-            if (Array.isArray(p.terpenes) && p.terpenes.length > 0) {
-                p.terpenes.forEach(t => {
-                    if (t.name && t.name.toLowerCase().includes("total")) return;
-                    const tName = t.name || "Compound";
-                    const val = t.value ?? t.percentage ?? t.amount ?? t.val ?? 0;
-                    const numVal = typeof val === "number" ? val : parseFloat(val) || 0;
-                    const pctStr = (numVal > 10 ? numVal / 100 : numVal).toFixed(2);
-                    
-                    terpRowsHtml += `
-                        <div class="terp-row">
-                            <div class="terp-name-area">
-                                <div class="terp-badge-icon">🌿</div>
-                                <span>${tName}</span>
-                            </div>
-                            <div class="terp-metric-area">
-                                <span class="terp-pct">${pctStr}%</span>
-                            </div>
-                        </div>
-                    `;
-                });
-            } else {
-                terpRowsHtml = `<div style="color: var(--muted); font-size: 0.85rem; text-align: center; padding: 12px;">No individual terpene breakdown listed for this item.</div>`;
-            }
 
-            modalBody.innerHTML = `
-                <div class="modal-header-info">
-                    <div class="modal-title">${title}</div>
-                    <div>
-                        <span class="modal-sub">${strainType} ${subcat ? '• ' + subcat : ''}</span>
+            // TOTAL TERPENES AT THE TOP
+            terpRowsHtml += `
+        <div class="terp-row terp-total-row">
+            <div class="terp-name-area">
+                <div class="terp-badge-icon">🌿</div>
+                <span>Total Terpenes</span>
+            </div>
+            <div class="terp-metric-area">
+                <span class="terp-pct">${totalTerpeneDisplay}</span>
+            </div>
+        </div>
+    `;
+
+            // INDIVIDUAL TERPENES
+            if (Array.isArray(p.terpenes) && p.terpenes.length > 0) {
+
+                p.terpenes.forEach(t => {
+
+                    // Skip the API's total terpene entry because
+                    // we already display Total Terpenes above.
+                    if (
+                        t.name &&
+                        t.name.toLowerCase().includes("total")
+                    ) {
+                        return;
+                    }
+
+                    const tName = t.name || "Compound";
+
+                    const val =
+                        t.value ??
+                        t.percentage ??
+                        t.amount ??
+                        t.val ??
+                        0;
+
+                    const numVal =
+                        typeof val === "number"
+                            ? val
+                            : parseFloat(val) || 0;
+
+                    const pctStr =
+                        (numVal > 10 ? numVal / 100 : numVal).toFixed(2);
+
+                    terpRowsHtml += `
+                <div class="terp-row">
+                    <div class="terp-name-area">
+                        <div class="terp-badge-icon">🌿</div>
+                        <span>${tName}</span>
                     </div>
-                </div>
-                ${p._activeSpecial ? `
-                    <div class="modal-special-banner">
-                        <span>🔥</span>
-                        <span>${p._activeSpecial.name || "Special Offer Active"}</span>
+                    <div class="terp-metric-area">
+                        <span class="terp-pct">${pctStr}%</span>
                     </div>
-                ` : ''}
-                <div class="image-container">
-                    <div class="large-image-wrapper">
-                        <img src="${imgUrl}" alt="${title}">
-                    </div>
-                </div>
-                <div style="font-size: 0.85rem; color: var(--muted); line-height: 1.4;">${desc}</div>
-                <div class="terpene-list-box">
-                    ${terpRowsHtml}
-                </div>
-                <div class="shop-row">
-                    <a class="shop-btn" href="${shopUrl}" target="_blank">View Lab Report &amp; Shop</a>
                 </div>
             `;
+                });
+
+            } else {
+                terpRowsHtml += `
+            <div style="
+                color: var(--muted);
+                font-size: 0.85rem;
+                text-align: center;
+                padding: 12px;
+            ">
+                No individual terpene breakdown listed for this item.
+            </div>
+        `;
+            }
+
+            // ---------------------------------------------------------
+            // MODAL CONTENT
+            // ---------------------------------------------------------
+            modalBody.innerHTML = `
+        <div class="modal-header-info">
+
+            <div class="modal-title">
+                ${title}
+            </div>
+
+            <div>
+                <span class="modal-sub">
+                    ${strainType}
+                    ${subcat ? " • " + subcat : ""}
+                    • Total Terpenes: ${totalTerpeneDisplay}
+                </span>
+            </div>
+
+        </div>
+
+        ${p._activeSpecial ? `
+            <div class="modal-special-banner">
+                <span>🔥</span>
+                <span>
+                    ${p._activeSpecial.name || "Special Offer Active"}
+                </span>
+            </div>
+        ` : ""}
+
+        <div class="image-container">
+            <div class="large-image-wrapper">
+                <img src="${imgUrl}" alt="${title}">
+            </div>
+        </div>
+
+        <div style="
+            font-size: 0.85rem;
+            color: var(--muted);
+            line-height: 1.4;
+        ">
+            ${desc}
+        </div>
+
+        <div class="terpene-list-box">
+            ${terpRowsHtml}
+        </div>
+
+        <div class="shop-row">
+            <a
+                class="shop-btn"
+                href="${shopUrl}"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                View Lab Report &amp; Shop
+            </a>
+        </div>
+    `;
 
             modalOverlay.classList.add("active");
         }
@@ -1092,4 +1453,5 @@
         init();
     </script>
 </body>
+
 </html>
