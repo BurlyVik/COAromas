@@ -766,32 +766,12 @@
         }
 
         function getTotalTerpene(p) {
-            // Check for direct total terpene properties from the API first
-            if (p.total_terpenes !== undefined && p.total_terpenes !== null) {
-                return parseFloat(p.total_terpenes) || 0;
-            }
-            if (p.terpene_percentage !== undefined && p.terpene_percentage !== null) {
-                return parseFloat(p.terpene_percentage) || 0;
-            }
-            if (p.overall_terpenes !== undefined && p.overall_terpenes !== null) {
-                return parseFloat(p.overall_terpenes) || 0;
-            }
-
-            // Fallback to evaluating individual terpene values accurately
-            const terpenes = p.terpenes || [];
-            if (terpenes.length === 0) return 0;
-
-            const values = terpenes.map(t => {
-                const val = t.value ?? t.percentage ?? t.amount ?? t.val;
-                return typeof val === "number" ? val : parseFloat(val) || 0;
-            }).filter(n => !isNaN(n));
-
-            if (values.length === 0) return 0;
-
-            // If you want the maximum/dominant terpene or sum, adjust here. 
-            // Using sum of verified individual terpene values:
-            let sum = values.reduce((acc, v) => acc + v, 0);
-            return sum > 0 ? sum : values[0];
+            if (!Array.isArray(p.terpenes) || p.terpenes.length === 0) return 0;
+            
+            // Grab the primary/first terpene value just like terp-pct
+            const firstTerp = p.terpenes[0];
+            const val = firstTerp.value ?? firstTerp.percentage ?? firstTerp.amount ?? firstTerp.val;
+            return typeof val === "number" ? val : parseFloat(val) || 0;
         }
 
         function getSpecificTerpeneVal(p, terpName) {
