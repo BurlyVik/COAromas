@@ -1078,9 +1078,11 @@
                 <div class="terpene-list-box">
                     ${terpRowsHtml}
                 </div>
-                <div class="shop-row">
-                    <a href="https://cookiesflorida.co" target="_blank" class="shop-btn">View on Store Menu</a>
-                </div>
+                ${linkUrl !== "#" ? `
+                    <div class="shop-row">
+                        <a class="shop-btn" href="${linkUrl}" target="_blank">View Lab Report & Shop</a>
+                    </div>
+                ` : ''}
             `;
             overlay.classList.add("active");
         }
