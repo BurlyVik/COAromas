@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,9 +21,11 @@
             --color-lime: #8ac926;
             --gray-circle: #333b48;
         }
+
         * {
             box-sizing: border-box;
         }
+
         body {
             font-family: Inter, system-ui, sans-serif;
             background: var(--bg);
@@ -31,6 +34,7 @@
             padding: 16px;
             min-height: 100vh;
         }
+
         .main-container {
             max-width: 1400px;
             margin: 0 auto;
@@ -38,6 +42,7 @@
             flex-direction: column;
             gap: 16px;
         }
+
         /* =========================================================
            HEADER
         ========================================================= */
@@ -50,21 +55,25 @@
             flex-direction: column;
             gap: 16px;
         }
+
         .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
+
         .header-top h1 {
             font-size: 1.35rem;
             margin: 0 0 4px 0;
             font-weight: 700;
         }
+
         .header-actions {
             display: flex;
             gap: 10px;
             align-items: center;
         }
+
         .reset-btn {
             background: var(--panel2);
             border: 1px solid var(--border);
@@ -76,14 +85,17 @@
             cursor: pointer;
             transition: all 0.2s;
         }
+
         .reset-btn:hover {
             border-color: var(--sale-red);
             color: var(--sale-red);
         }
+
         #status {
             color: var(--muted);
             font-size: 0.85rem;
         }
+
         /* =========================================================
            FILTERS
         ========================================================= */
@@ -95,20 +107,24 @@
             padding-top: 12px;
             border-top: 1px solid var(--border);
         }
+
         .filter-group {
             display: flex;
             flex-direction: column;
             gap: 4px;
         }
+
         .filter-group.terpene-desc-group {
             flex: 1;
             min-width: 280px;
         }
+
         .filter-group label {
             font-size: 0.75rem;
             color: var(--muted);
             font-weight: 600;
         }
+
         .terpene-info-box {
             background: var(--bg);
             border: 1px solid var(--border);
@@ -121,6 +137,7 @@
             display: flex;
             align-items: center;
         }
+
         select,
         input {
             background: var(--bg);
@@ -132,10 +149,12 @@
             outline: none;
             transition: border-color 0.2s;
         }
+
         select:focus,
         input:focus {
             border-color: var(--accent);
         }
+
         /* =========================================================
            PRODUCT GRID
         ========================================================= */
@@ -144,6 +163,7 @@
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 16px;
         }
+
         .product-card {
             background: var(--panel);
             border: 1px solid var(--border);
@@ -157,10 +177,12 @@
             position: relative;
             min-height: 165px;
         }
+
         .product-card:hover {
             border-color: var(--accent);
             transform: translateY(-2px);
         }
+
         /* =========================================================
            SELECTION CIRCLE
         ========================================================= */
@@ -170,6 +192,7 @@
             right: 12px;
             z-index: 10;
         }
+
         .select-circle {
             width: 26px;
             height: 26px;
@@ -185,18 +208,22 @@
             cursor: pointer;
             transition: all 0.2s;
         }
+
         .select-circle.pink {
             background: var(--color-pink);
             color: #fff;
         }
+
         .select-circle.cyan {
             background: var(--color-cyan);
             color: #000;
         }
+
         .select-circle.lime {
             background: var(--color-lime);
             color: #000;
         }
+
         /* =========================================================
            CARD
         ========================================================= */
@@ -206,6 +233,7 @@
             align-items: flex-start;
             padding-right: 40px;
         }
+
         .product-card img {
             width: 60px;
             height: 60px;
@@ -216,10 +244,12 @@
             flex-shrink: 0;
             border: 1px solid var(--border);
         }
+
         .card-info {
             flex: 1;
             min-width: 0;
         }
+
         .card-title {
             font-size: 0.95rem;
             font-weight: 700;
@@ -229,6 +259,7 @@
             color: var(--text);
             margin-bottom: 4px;
         }
+
         .card-desc {
             font-size: 0.75rem;
             color: var(--muted);
@@ -239,6 +270,7 @@
             overflow: hidden;
             line-height: 1.3;
         }
+
         .card-footer-row {
             display: flex;
             justify-content: space-between;
@@ -248,18 +280,21 @@
             border-top: 1px solid var(--border);
             gap: 8px;
         }
+
         .card-price-area {
             display: flex;
             flex-direction: column;
             gap: 6px;
             min-width: 0;
         }
+
         .card-price {
             color: var(--text);
             font-weight: 700;
             font-size: 0.95rem;
             line-height: 1;
         }
+
         .card-sale-badge {
             background: rgba(255, 51, 102, 0.15);
             color: var(--sale-red);
@@ -272,6 +307,20 @@
             width: max-content;
             margin-top: 2px;
         }
+
+        .card-offer-badge {
+            background: rgba(255, 42, 112, 0.15);
+            color: var(--color-pink);
+            border: 1px solid rgba(255, 42, 112, 0.35);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: inline-block;
+            width: max-content;
+            margin-top: 2px;
+        }
+
         .card-terp-badge {
             background: rgba(46, 160, 67, 0.15);
             color: var(--accent);
@@ -286,6 +335,7 @@
             gap: 6px;
             white-space: nowrap;
         }
+
         .card-terp-label-name {
             font-size: 0.7rem;
             color: var(--muted);
@@ -295,6 +345,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
         /* =========================================================
            HOVER PREVIEW
         ========================================================= */
@@ -314,6 +365,7 @@
             justify-content: center;
             backdrop-filter: blur(8px);
         }
+
         .hover-preview-tooltip img {
             max-width: 100%;
             max-height: 100%;
@@ -322,6 +374,7 @@
             border-radius: 8px;
             padding: 8px;
         }
+
         /* =========================================================
            MODAL
         ========================================================= */
@@ -339,9 +392,11 @@
             z-index: 1000;
             backdrop-filter: blur(4px);
         }
+
         .modal-overlay.active {
             display: flex;
         }
+
         .modal-content {
             background: var(--panel);
             border: 1px solid var(--border);
@@ -357,6 +412,7 @@
             position: relative;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
         }
+
         .close-btn {
             position: absolute;
             top: 18px;
@@ -374,9 +430,11 @@
             justify-content: center;
             z-index: 5;
         }
+
         .close-btn:hover {
             border-color: var(--accent);
         }
+
         .modal-header-info {
             display: flex;
             flex-direction: column;
@@ -384,11 +442,13 @@
             padding-right: 30px;
             padding-bottom: 4px;
         }
+
         .modal-title {
             font-size: 1.1rem;
             font-weight: 700;
             line-height: 1.3;
         }
+
         .modal-sub {
             font-size: 0.85rem;
             color: var(--muted);
@@ -399,6 +459,7 @@
             display: inline-block;
             margin-top: 4px;
         }
+
         .modal-special-banner {
             background: rgba(255, 51, 102, 0.12);
             border: 1px solid rgba(255, 51, 102, 0.3);
@@ -411,6 +472,7 @@
             align-items: center;
             gap: 8px;
         }
+
         .image-container {
             background: #ffffff;
             border: 1px solid var(--border);
@@ -418,6 +480,7 @@
             padding: 20px;
             text-align: center;
         }
+
         .large-image-wrapper {
             width: 100%;
             height: 220px;
@@ -425,12 +488,14 @@
             align-items: center;
             justify-content: center;
         }
+
         .large-image-wrapper img {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
             background: #ffffff;
         }
+
         /* =========================================================
            TERPENE LIST
         ========================================================= */
@@ -445,6 +510,7 @@
             max-height: 260px;
             overflow-y: auto;
         }
+
         .terp-row {
             display: flex;
             align-items: center;
@@ -455,6 +521,7 @@
             border-radius: 10px;
             gap: 10px;
         }
+
         .terp-name-area {
             display: flex;
             align-items: center;
@@ -462,6 +529,7 @@
             font-size: 0.85rem;
             font-weight: 600;
         }
+
         .terp-badge-icon {
             width: 24px;
             height: 24px;
@@ -474,12 +542,14 @@
             color: var(--blue);
             flex-shrink: 0;
         }
+
         .terp-metric-area {
             display: flex;
             align-items: center;
             gap: 14px;
             font-size: 0.8rem;
         }
+
         .terp-pct {
             color: var(--text);
             font-weight: 700;
@@ -489,6 +559,7 @@
             border: 1px solid var(--border);
             white-space: nowrap;
         }
+
         /* =========================================================
            SHOP BUTTON
         ========================================================= */
@@ -498,6 +569,7 @@
             align-items: center;
             margin-top: 4px;
         }
+
         .shop-btn {
             background: var(--accent);
             color: #fff;
@@ -509,9 +581,11 @@
             text-align: center;
             flex: 1;
         }
+
         .shop-btn:hover {
             opacity: 0.9;
         }
+
         /* =========================================================
            LOADING
         ========================================================= */
@@ -521,6 +595,7 @@
             color: var(--muted);
             padding: 50px 20px;
         }
+
         .spinner {
             width: 30px;
             height: 30px;
@@ -530,11 +605,13 @@
             animation: spin 0.8s linear infinite;
             margin: 0 auto 15px;
         }
+
         @keyframes spin {
             to {
                 transform: rotate(360deg);
             }
         }
+
         /* =========================================================
            MOBILE
         ========================================================= */
@@ -542,50 +619,63 @@
             .filters-row {
                 align-items: stretch;
             }
+
             .filter-group {
                 flex: 1;
                 min-width: 180px;
             }
+
             .filter-group.terpene-desc-group {
                 min-width: 100%;
             }
         }
+
         @media (max-width: 600px) {
             body {
                 padding: 10px;
             }
+
             .header-box {
                 padding: 16px;
             }
+
             .header-top {
                 align-items: flex-start;
                 gap: 12px;
             }
+
             .header-top h1 {
                 font-size: 1.1rem;
             }
+
             .header-actions {
                 flex-shrink: 0;
             }
+
             .reset-btn {
                 padding: 7px 10px;
                 font-size: 0.75rem;
             }
+
             .filter-group {
                 min-width: 100%;
             }
+
             .grid-container {
                 grid-template-columns: 1fr;
             }
+
             .modal-content {
                 padding: 18px;
             }
+
             .large-image-wrapper {
                 height: 180px;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="main-container">
         <!-- =========================================================
@@ -659,7 +749,7 @@
                             All Items (Specials & Regular)
                         </option>
                         <option value="on-sale">
-                            On Sale Only
+                            Specials / Offers Only
                         </option>
                         <option value="none">
                             Regular Price Only
@@ -1112,6 +1202,25 @@
                                 product.discount ||
                                 hasVariantSale
                             );
+                        const productOffers =
+                            Array.isArray(product.specials)
+                                ? product.specials.filter(special => {
+                                    if (!special) {
+                                        return false;
+                                    }
+
+                                    const type = String(
+                                        special.type || ""
+                                    )
+                                        .trim()
+                                        .toUpperCase();
+
+                                    return type === "OFFER";
+                                })
+                                : [];
+
+                        product._activeOffers = productOffers;
+
                         const saleSpecial =
                             loadedSpecials.find(special => {
                                 if (!special) {
@@ -1732,20 +1841,32 @@
             ) {
                 return true;
             }
-            const hasSpecial =
+
+            const hasSale =
                 !!product._activeSpecial;
+
+            const hasOffer =
+                Array.isArray(product._activeOffers) &&
+                product._activeOffers.length > 0;
+
+            const hasSpecial =
+                hasSale || hasOffer;
+
             if (
                 filterValue === "on-sale"
             ) {
                 return hasSpecial;
             }
+
             if (
                 filterValue === "none"
             ) {
                 return !hasSpecial;
             }
+
             return true;
         }
+
         /* ========================================================
            APPLY FILTERS
         ======================================================== */
@@ -2118,6 +2239,11 @@
                             : "Jungle Boys Florida medical product profile.";
                     const activeSpecial =
                         product._activeSpecial;
+                    const activeOffers =
+                        Array.isArray(product._activeOffers)
+                            ? product._activeOffers
+                            : [];
+
                     const selectedColor =
                         userSelections[
                         originalIndex
@@ -2181,14 +2307,22 @@
                             </span>
                             ${activeSpecial
                             ? `
-                                        <span class="card-sale-badge">
-                                            ${activeSpecial.type ||
-                            "SALE"
-                            }
-                                        </span>
-                                    `
+                                    <span class="card-sale-badge">
+                                        ${activeSpecial.type || "SALE"}
+                                    </span>
+                                `
                             : ""
                         }
+
+                        ${activeOffers.length > 0
+                            ? activeOffers.map(offer => `
+                                <span class="card-offer-badge">
+                                    ${offer.name || "SPECIAL OFFER"}
+                                </span>
+                            `).join("")
+                            : ""
+                        }
+
                         </div>
                         <span class="card-terp-badge">
                             ${labelDisplay}
@@ -2479,23 +2613,26 @@
                 </span>
             </div>
         </div>
-        ${product._activeSpecial
-                    ? `
-                    <div class="modal-special-banner">
-                        <span>
-                            🔥
-                        </span>
-                        <span>
-                            ${product
-                        ._activeSpecial
-                        .name ||
-                    "Special Offer Active"
-                    }
+        ${product._activeSpecial || 
+    (Array.isArray(product._activeOffers) &&
+     product._activeOffers.length > 0)
+    ? `
+        <div class="modal-special-banner">
+            <span>🔥</span>
+            <span>
+                ${
+                    product._activeSpecial?.name ||
+                    product._activeOffers
+                                    .map(offer => offer.name)
+                                    .join(" • ") ||
+                                "Special Offer Active"
+                            }
                         </span>
                     </div>
                 `
-                    : ""
+                : ""
                 }
+
         <div class="image-container">
             <div class="large-image-wrapper">
                 <img
@@ -2557,4 +2694,5 @@
         init();
     </script>
 </body>
+
 </html>
