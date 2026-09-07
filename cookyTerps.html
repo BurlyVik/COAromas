@@ -768,10 +768,22 @@
         function getTotalTerpene(p) {
             if (!Array.isArray(p.terpenes) || p.terpenes.length === 0) return 0;
             
-            // Grab the primary/first terpene value just like terp-pct
-            const firstTerp = p.terpenes[0];
-            const val = firstTerp.value ?? firstTerp.percentage ?? firstTerp.amount ?? firstTerp.val;
-            return typeof val === "number" ? val : parseFloat(val) || 0;
+            const totalEntry = p.terpenes.find(t => 
+                t.name && t.name.toLowerCase().includes("total")
+            );
+            
+            if (totalEntry) {
+                const val = totalEntry.value ?? totalEntry.percentage ?? totalEntry.amount ?? totalEntry.val;
+                return typeof val === "number" ? val : parseFloat(val) || 0;
+            }
+            
+            let sum = p.terpenes.reduce((acc, t) => {
+                if (t.name && t.name.toLowerCase().includes("total")) return acc;
+                const val = t.value ?? t.percentage ?? t.amount ?? t.val;
+                return acc + (typeof val === "number" ? val : parseFloat(val) || 0);
+            }, 0);
+            
+            return sum > 0 ? sum : 0;
         }
 
         function getSpecificTerpeneVal(p, terpName) {
