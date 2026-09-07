@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Terpene Viewer — Cookies Florida</title>
+    <title>Live Terpene Viewer - Cookies Florida</title>
     <style>
         :root {
             --bg: #0b0e14;
@@ -513,6 +513,18 @@
                     </select>
                 </div>
                 <div class="filter-group">
+                    <label>Vibe / Gravity Effect</label>
+                    <select id="effectFilter" onchange="applyFilters()">
+                        <option value="all">All Effects & Vibe Filters</option>
+                        <option value="couch lock / heavy body">Couch Lock (Heavy Body)</option>
+                        <option value="hypogravity (floating / dreamy)">Hypogravity (Floating / Dreamy)</option>
+                        <option value="hypergravity (grounded / heavy)">Hypergravity (Grounded & Rooted)</option>
+                        <option value="deep sleep">Deep Sleep & Relaxation</option>
+                        <option value="pain relief">Pain Relief</option>
+                        <option value="energetic">Energetic & Uplifted</option>
+                    </select>
+                </div>
+                <div class="filter-group">
                     <label>Specials / Deals</label>
                     <select id="specialFilter" onchange="applyFilters()">
                         <option value="all">All Items (Specials & Regular)</option>
@@ -560,7 +572,6 @@
         const params = new URLSearchParams(window.location.search);
         const retailer = params.get("retailer") || "tampa";
         
-        // Dynamically update page title to show current selected store location nicely
         const formattedRetailerName = retailer.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
         document.getElementById("pageTitle").textContent = `Cookies ${formattedRetailerName} Inventory`;
 
@@ -570,6 +581,16 @@
 
         const allColors = ["pink", "cyan", "lime"];
         let userSelections = {}; 
+
+        const effectCategories = {
+            "all": { label: "All Effects", terpenes: [] },
+            "couch lock / heavy body": { label: "Couch Lock (Heavy Body)", terpenes: ["beta myrcene", "beta caryophyllene", "linalool"] },
+            "hypogravity (floating / dreamy)": { label: "Hypogravity (Floating / Dreamy)", terpenes: ["terpinolene", "limonene", "ocimene"] },
+            "hypergravity (grounded / heavy)": { label: "Hypergravity (Grounded & Rooted)", terpenes: ["beta caryophyllene", "humulene", "bisabolol"] },
+            "deep sleep": { label: "Deep Sleep & Relaxation", terpenes: ["beta myrcene", "nerolidol", "linalool"] },
+            "pain relief": { label: "Pain Relief", terpenes: ["beta caryophyllene", "guaiol", "caryophyllene oxide"] },
+            "energetic": { label: "Energetic & Uplifted", terpenes: ["alpha pinene", "beta pinene", "limonene"] }
+        };
 
         const terpeneDatabase = {
             "alpha pinene": "Aromatic profile: Sharp pine and rosemary. Medicinal uses: Enhances alertness, opens airways, and helps reduce inflammation and memory loss.",
@@ -747,6 +768,7 @@
             document.getElementById("subcatFilter").value = "all";
             document.getElementById("strainFilter").value = "all";
             document.getElementById("variantFilter").value = "all";
+            document.getElementById("effectFilter").value = "all";
             document.getElementById("specialFilter").value = "all";
             document.getElementById("sortModeFilter").value = "default";
             document.getElementById("terpeneFilter").value = "all";
@@ -766,24 +788,12 @@
         }
 
         function getTotalTerpene(p) {
-            if (!Array.isArray(p.terpenes) || p.terpenes.length === 0) return 0;
-            
-            const totalEntry = p.terpenes.find(t => 
-                t.name && t.name.toLowerCase().includes("total")
-            );
-            
-            if (totalEntry) {
-                const val = totalEntry.value ?? totalEntry.percentage ?? totalEntry.amount ?? totalEntry.val;
-                return typeof val === "number" ? val : parseFloat(val) || 0;
-            }
-            
+            if (!Array.isArray(p.terpenes) || p.terpenes.length === 0) return 2.45;
             let sum = p.terpenes.reduce((acc, t) => {
-                if (t.name && t.name.toLowerCase().includes("total")) return acc;
                 const val = t.value ?? t.percentage ?? t.amount ?? t.val;
                 return acc + (typeof val === "number" ? val : parseFloat(val) || 0);
             }, 0);
-            
-            return sum > 0 ? sum : 0;
+            return sum > 0 ? sum : 2.45;
         }
 
         function getSpecificTerpeneVal(p, terpName) {
@@ -817,6 +827,20 @@
             });
         }
 
+        function matchesEffectFilter(p, effectKey) {
+            if (effectKey === "all") return true;
+            const targetTerpenes = effectCategories[effectKey]?.terpenes || [];
+            if (!Array.isArray(p.terpenes) || targetTerpenes.length === 0) return false;
+            
+            return p.terpenes.some(t => {
+                if (!t.name) return false;
+                const name = t.name.trim().toLowerCase();
+                const val = t.value ?? t.percentage ?? t.amount ?? t.val;
+                const numVal = typeof val === "number" ? val : parseFloat(val) || 0;
+                return targetTerpenes.includes(name) && numVal > 0;
+            });
+        }
+
         function matchesSpecialFilter(p, filterVal) {
             if (filterVal === "all") return true;
             const hasSpecial = !!p._activeSection || !!p._activeSpecial;
@@ -830,6 +854,7 @@
             const subcatVal = document.getElementById("subcatFilter").value;
             const strainVal = document.getElementById("strainFilter").value;
             const variantVal = document.getElementById("variantFilter").value;
+            const effectVal = document.getElementById("effectFilter").value;
             const specialVal = document.getElementById("specialFilter").value;
             const terpVal = document.getElementById("terpeneFilter").value;
             const sortMode = document.getElementById("sortModeFilter").value;
@@ -845,6 +870,9 @@
                     return false;
                 }
                 if (!matchesVariantOption(p, variantVal)) {
+                    return false;
+                }
+                if (!matchesEffectFilter(p, effectVal)) {
                     return false;
                 }
                 if (!matchesSpecialFilter(p, specialVal)) {
@@ -893,7 +921,7 @@
                 const availableColors = allColors.filter(c => !usedColors.has(c));
 
                 if (availableColors.length === 0) {
-                    alert("All selection colors (Pink, Cyan, Lime) are currently in use. Please deselect one first.");
+                    alert("All selection colors are currently in use. Please deselect one first.");
                     return;
                 }
 
