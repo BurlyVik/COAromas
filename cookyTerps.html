@@ -1135,19 +1135,80 @@
             applyFilters();
         }
 
+        // ---------------------------------------------------------
+        // THC VALUE
+        // Handles:
+        //   - potency_thc
+        //   - thc
+        //   - thc_percentage
+        //   - potency.thc
+        //   - variants[].thc
+        //   - variants[].potency_thc
+        //   - strings such as "28.4% THC"
+        //   - decimal values such as 0.284
+        // ---------------------------------------------------------
+        function getTHCValue(p) {
+            if (
+                p &&
+                p.potency_thc &&
+                Array.isArray(p.potency_thc.range) &&
+                p.potency_thc.range.length > 0
+            ) {
+                const thc = parseFloat(p.potency_thc.range[0]);
+
+                if (Number.isFinite(thc)) {
+                    return thc;
+                }
+            }
+
+            return 0;
+        }
+
+        function getCBDValue(p) {
+            if (
+                p &&
+                p.potency_cbd &&
+                Array.isArray(p.potency_cbd.range) &&
+                p.potency_cbd.range.length > 0
+            ) {
+                const cbd = parseFloat(p.potency_cbd.range[0]);
+
+                if (Number.isFinite(cbd)) {
+                    return cbd;
+                }
+            }
+
+            return 0;
+        }
+
+
+
         function renderGrid(products) {
             const container = document.getElementById("productGrid");
             const sortMode = document.getElementById("sortModeFilter").value;
             const terpVal = document.getElementById("terpeneFilter").value;
 
             if (products.length === 0) {
-                container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 40px;">No matching products found.</div>`;
+                container.innerHTML = `
+            <div style="
+                grid-column: 1/-1;
+                text-align: center;
+                color: var(--muted);
+                padding: 40px;
+            ">
+                No matching products found.
+            </div>
+        `;
                 return;
             }
 
             container.innerHTML = products.map((p) => {
+
                 const originalIndex = loadedProducts.indexOf(p);
 
+                // ---------------------------------------------------------
+                // PRICE
+                // ---------------------------------------------------------
                 let priceVal = "—";
                 const rawPrice = getProductPrice(p);
 
@@ -1155,69 +1216,183 @@
                     priceVal = `$${rawPrice.toFixed(2)}`;
                 }
 
+                // ---------------------------------------------------------
+                // TERPENES
+                // ---------------------------------------------------------
                 const totalTerpSum = getTotalTerpene(p);
+
                 let badgeVal = totalTerpSum;
                 let labelDisplay = "";
 
                 if (sortMode === "targeted-best" && terpVal !== "all") {
                     badgeVal = getSpecificTerpeneVal(p, terpVal);
-                    labelDisplay = `<span class="card-terp-label-name">${terpVal}</span>`;
+
+                    labelDisplay = `
+                <span class="card-terp-label-name">
+                    ${terpVal}
+                </span>
+            `;
                 }
 
-                const imgSrc = p.images?.[0]?.url || "";
+                // ---------------------------------------------------------
+                // THC / CBD
+                // ---------------------------------------------------------
+                const thcVal = getTHCValue(p);
+                const cbdVal = getCBDValue(p);
+
+                // ---------------------------------------------------------
+                // IMAGE
+                // ---------------------------------------------------------
+                const imgSrc = getProductImage(p);
+
+                // ---------------------------------------------------------
+                // DESCRIPTION
+                // ---------------------------------------------------------
                 const descriptionText = p.description
                     ? p.description.replace(/<[^>]*>/g, "")
                     : "Cookies Florida medical product profile.";
 
+                // ---------------------------------------------------------
+                // SPECIAL
+                // ---------------------------------------------------------
                 const activeSpecial = p._activeSpecial;
 
+                // ---------------------------------------------------------
+                // SELECTION
+                // ---------------------------------------------------------
                 const assignedColor = userSelections[originalIndex];
-                const colorClass = assignedColor ? assignedColor : '';
-                const isChecked = assignedColor ? 'selected' : '';
+                const colorClass = assignedColor || "";
+                const isChecked = assignedColor ? "selected" : "";
 
                 return `
-            <div class="product-card" 
+            <div class="product-card"
                  onclick="openProductModal(${originalIndex})"
                  onmouseenter="showHoverPreview(event, '${imgSrc}')"
                  onmousemove="moveHoverPreview(event)"
                  onmouseleave="hideHoverPreview()">
 
                 <div class="card-selection-badge">
-                    <button class="select-circle ${colorClass} ${isChecked}" 
-                            title="Click to select or deselect color" 
-                            onclick="handleSingleCircleClick(event, ${originalIndex})">✓</button>
+                    <button
+                        class="select-circle ${colorClass} ${isChecked}"
+                        title="Click to select or deselect color"
+                        onclick="handleSingleCircleClick(event, ${originalIndex})">
+                        ✓
+                    </button>
                 </div>
 
                 <div class="card-top">
+
                     ${imgSrc
                         ? `<img src="${imgSrc}" alt="">`
-                        : '<div style="width:60px;height:60px;background:#ffffff;border-radius:8px;"></div>'
+                        : `
+                            <div style="
+                                width:60px;
+                                height:60px;
+                                background:#ffffff;
+                                border-radius:8px;
+                            "></div>
+                        `
                     }
 
                     <div class="card-info">
-                        <div class="card-title">${p.name || 'Unnamed Product'}</div>
-                        <div class="card-desc">${descriptionText}</div>
+
+                        <div class="card-title">
+                            ${p.name || "Unnamed Product"}
+                        </div>
+
+                        <div class="card-desc">
+                            ${descriptionText}
+                        </div>
+
                     </div>
                 </div>
 
                 <div class="card-footer-row">
+
                     <div class="card-price-area">
-                        <span class="card-price">${priceVal}</span>
+
+                        <span class="card-price">
+                            ${priceVal}
+                        </span>
+
                         ${activeSpecial
-                        ? `<span class="card-sale-badge">${activeSpecial.type || 'SALE'}</span>`
-                        : ''
+                        ? `
+                                <span class="card-sale-badge">
+                                    ${activeSpecial.type || "SALE"}
+                                </span>
+                            `
+                        : ""
                     }
+
                     </div>
 
-                    <span class="card-terp-badge">
-                        ${labelDisplay}
-                        <span>${badgeVal.toFixed(2)}%</span>
-                    </span>
+                    <!-- RIGHT SIDE BADGES -->
+                    <div style="
+                        display:flex;
+                        gap:6px;
+                        align-items:center;
+                    ">
+
+                        <!-- CBD -->
+                        <div
+                            class="card-terp-badge"
+                            style="
+                                background:rgba(0,180,216,0.15);
+                                color:#00b4d8;
+                                border:1px solid rgba(0,180,216,0.3);
+                            "
+                            title="CBD">
+
+                            <span>
+                                CBD ${cbdVal > 0
+                        ? cbdVal.toFixed(1) + "%"
+                        : "—"
+                    }
+                            </span>
+
+                        </div>
+
+                        <!-- THC -->
+                        <div
+                            class="card-terp-badge"
+                            style="
+                                background:rgba(255,193,7,0.15);
+                                color:#ffc107;
+                                border:1px solid rgba(255,193,7,0.3);
+                            "
+                            title="THC">
+
+                            <span>
+                                THC ${thcVal > 0
+                        ? thcVal.toFixed(1) + "%"
+                        : "—"
+                    }
+                            </span>
+
+                        </div>
+
+                        <!-- TERPENE -->
+                        <div class="card-terp-badge">
+
+                            ${labelDisplay}
+
+                            <span>
+                                ${badgeVal.toFixed(2)}%
+                            </span>
+
+                        </div>
+
+                    </div>
+
                 </div>
+
             </div>
         `;
-            }).join('');
+
+            }).join("");
         }
+
+
 
         function showHoverPreview(event, imgSrc) {
             if (!imgSrc) return;
